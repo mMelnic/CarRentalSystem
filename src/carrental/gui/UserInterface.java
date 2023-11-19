@@ -6,11 +6,14 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import carrental.models.CarInventory;
+
 public class UserInterface extends JFrame {
     private JButton customerButton;
     private JButton adminButton;
+    private CarInventory carInventory;
 
-    public UserInterface() {
+    public UserInterface(CarInventory inventory) {
         super("Car Rental System");
 
         customerButton = new JButton("Customer Panel");
@@ -22,6 +25,8 @@ public class UserInterface extends JFrame {
 
         customerButton.addActionListener(e -> openCustomerPanel());
         adminButton.addActionListener(e -> openAdminPanel());
+
+        carInventory = inventory;
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(300, 150);
@@ -35,7 +40,7 @@ public class UserInterface extends JFrame {
     }
 
     private void openAdminPanel() {
-        new AdminLoginInterface(this);
+        new AdminLoginInterface(this, carInventory);
         setVisible(false);
     }
 }

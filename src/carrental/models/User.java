@@ -29,9 +29,6 @@ public class User implements Serializable{
         this.username = username;
     }
 
-    // For security reasons, avoid exposing the password directly
-    // Getter for password should not be used in normal circumstances
-    // Setter for password should only be used during user creation or password update
     public String getPassword() {
         return password;
     }

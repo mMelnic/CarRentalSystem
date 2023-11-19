@@ -5,19 +5,21 @@ import java.awt.CardLayout;
 
 import javax.swing.*;
 
+import carrental.models.CarInventory;
+
 public class AdminLoginInterface extends JFrame{
     private JPanel cardPanel;
     private CardLayout cardLayout;
     private JButton backButton;
 
-    public AdminLoginInterface(JFrame mainInterface) {
+    public AdminLoginInterface(JFrame mainInterface, CarInventory inventory) {
         super("Administrator Panel");
 
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
 
-        AdminLoginPanel adminPanel = new AdminLoginPanel();
+        AdminLoginPanel adminPanel = new AdminLoginPanel(inventory);
 
         cardPanel.add(adminPanel, "Administrator");
 

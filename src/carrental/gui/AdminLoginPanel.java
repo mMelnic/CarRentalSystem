@@ -5,7 +5,8 @@ import java.awt.GridLayout;
 import javax.swing.*;
 
 import carrental.exceptions.AccountCreationException;
-import carrental.models.User;
+import carrental.models.Administrator;
+import carrental.models.CarInventory;
 import carrental.util.AdminAuthentication;
 
 public class AdminLoginPanel extends JPanel {
@@ -15,8 +16,9 @@ public class AdminLoginPanel extends JPanel {
     private JTextField emailField;
     private JButton loginButton;
     private JButton createAccountButton;
+    private CarInventory carInventory;
 
-    public AdminLoginPanel() {
+    public AdminLoginPanel(CarInventory inventory) {
         initComponents();
         setLayout(new GridLayout(5, 2));
         add(new JLabel("Username:"));
@@ -29,6 +31,7 @@ public class AdminLoginPanel extends JPanel {
         add(emailField);
         add(loginButton);
         add(createAccountButton);
+        carInventory = inventory;
 
         loginButton.addActionListener(e -> adminLogin());
         createAccountButton.addActionListener(e -> adminCreateAccount());
@@ -47,12 +50,23 @@ public class AdminLoginPanel extends JPanel {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         String email = emailField.getText();
-        User authenticatedUser = AdminAuthentication.authenticateUser(username, password, email);
+        Administrator authenticatedUser = AdminAuthentication.authenticateUser(username, password, email);
         if (authenticatedUser != null) {
+            // Open a new window upon successful login
+            openAdminMainWindow(authenticatedUser);
             JOptionPane.showMessageDialog(this, "Administrator Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Administrator Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void openAdminMainWindow(Administrator authenticatedUser) {
+        // You can create and display a new window for the administrator here
+        AdminMainWindow adminMainWindow = new AdminMainWindow(authenticatedUser, carInventory);
+        adminMainWindow.setVisible(true);
+
+        // Close the current login window
+        SwingUtilities.getWindowAncestor(this).dispose();
     }
 
     private void adminCreateAccount() {
@@ -61,7 +75,7 @@ public class AdminLoginPanel extends JPanel {
         String fullName = fullNameField.getText();
         String email = emailField.getText();
 
-        User newUser = new User(username, password, fullName, email);
+        Administrator newUser = new Administrator(username, password, fullName, email);
         try {
             AdminAuthentication.createUser(newUser);
             JOptionPane.showMessageDialog(this, "Administrator Account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
