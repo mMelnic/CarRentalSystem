@@ -1,8 +1,9 @@
 package carrental.models;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public class Car {
+public class Car implements Serializable{
     private String manufacturer;
     private String model;
     private String registrationInfo;
@@ -11,6 +12,7 @@ public class Car {
     private double price;
     private ComfortLevel comfortLevel;
     private Set<AdditionalFeatures> additionalFeatures;
+    private boolean isRented;
 
     public enum ComfortLevel {
         BASIC,
@@ -29,13 +31,14 @@ public class Car {
     }
 
     public Car(String manufacturer, String model, String registrationInfo, String color, int yearOfProduction,
-               double price, ComfortLevel comfortLevel, Set<AdditionalFeatures> additionalFeatures) {
+               double price, boolean isRented, ComfortLevel comfortLevel, Set<AdditionalFeatures> additionalFeatures) {
         this.manufacturer = manufacturer;
         this.model = model;
         this.registrationInfo = registrationInfo;
         this.color = color;
         this.yearOfProduction = yearOfProduction;
         this.price = price;
+        this.isRented = isRented;
         this.comfortLevel = comfortLevel;
         this.additionalFeatures = additionalFeatures;
     }
@@ -104,5 +107,13 @@ public class Car {
 
     public void setAdditionalFeatures(Set<AdditionalFeatures> additionalFeatures) {
         this.additionalFeatures = additionalFeatures;
+    }
+
+    public boolean getRentedStatus() {
+        return isRented;
+    }
+
+    public void setRentedStatus(boolean status) {
+        isRented = status;
     }
 }

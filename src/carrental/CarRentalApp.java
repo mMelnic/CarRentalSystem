@@ -9,9 +9,9 @@ import carrental.util.CustomerAuthentication;
 
 public class CarRentalApp {
     public static void main(String[] args) {
-        CarInventory carInventory = new CarInventory();
+        CarInventory loadedCarInventory = CarInventory.deserializeCarInventory("carInventory.ser");
         AdminAuthentication.loadAdminDatabaseFromFile();
         CustomerAuthentication.loadCustomerDatabaseFromFile();
-        SwingUtilities.invokeLater(() -> new UserInterface(carInventory));
+        SwingUtilities.invokeLater(() -> new UserInterface(loadedCarInventory));
     }
 }

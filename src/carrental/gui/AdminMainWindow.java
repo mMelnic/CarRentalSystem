@@ -5,6 +5,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,12 +28,20 @@ public class AdminMainWindow extends JFrame {
         this.authenticatedUser = authenticatedUser;
         this.carInventory = carInventory;
         initializeComponents();
+
+        // Add a WindowListener to handle window closing
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // Serialize the car inventory when the window is closing
+                carInventory.serializeCarInventory("carInventory.ser");
+            }
+        });
     }
 
     private void initializeComponents() {
         setTitle("Car Rental System");
         setSize(1000, 800);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null); // Center the window on the screen
 
         // Create a main panel with BorderLayout
@@ -79,6 +89,11 @@ public class AdminMainWindow extends JFrame {
         // Add action listeners for navigation buttons
         carDatabaseButton.addActionListener(e -> showCarDatabaseView());
         rentalHistoryButton.addActionListener(e -> showRentalHistoryView());
+        logoutButton.addActionListener(e -> {
+            new UserInterface(carInventory);
+            carInventory.serializeCarInventory("carInventory.ser");
+            dispose();
+        });
 
         // Add buttons to the side panel
         carDatabaseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -131,19 +146,74 @@ public class AdminMainWindow extends JFrame {
     
         // Set an empty border to create space
         fieldsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
+    
         // Create a titled border with a custom font and size
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Car Information Entry");
         Font titleFont = new Font("Arial", Font.BOLD, 18); // Customize the font and size
         titledBorder.setTitleFont(titleFont);
-
+    
         // Set the titled border to the carInfoPanel
         carInfoPanel.setBorder(titledBorder);
     
         // Add the car information entry panel to the content panel
         carInfoPanel.add(fieldsPanel, BorderLayout.WEST);
+    
+        // Call the method to set up the action listener for the "Add" button
+        setupAddButtonListener(addButton, fieldsPanel);
+    
+        // Add the car information entry panel to the content panel
+        contentPanel.add(carInfoPanel, BorderLayout.NORTH);
+    
+        // Create and add the table panel to the content panel (CENTER)
+        List<Car> carList = carInventory.getCarList();
+        carTable = createCarTable(carList);
+    
+        // Create a titled border with a custom font and size for the table
+        TitledBorder tableTitleBorder = BorderFactory.createTitledBorder("Cars for Rent");
+        Font tableTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
+        tableTitleBorder.setTitleFont(tableTitleFont);
+    
+        // Create a panel for the title and table
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBorder(tableTitleBorder);
+    
+        // Add the carTable to the tablePanel
+        JScrollPane tableScrollPane = new JScrollPane(carTable);
+        tablePanel.add(tableScrollPane, BorderLayout.CENTER);
+    
+        // Add the tablePanel to the content panel
+        contentPanel.add(tablePanel, BorderLayout.CENTER);
 
-        addButton.addActionListener(e -> {
+        // Create a titled border with a custom font and size for the rented cars table
+        TitledBorder rentedCarsTitleBorder = BorderFactory.createTitledBorder("Rented Cars");
+        Font rentedCarsTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
+        rentedCarsTitleBorder.setTitleFont(rentedCarsTitleFont);
+
+        // Create a panel for the title and rented cars table
+        JPanel rentedCarsPanel = new JPanel(new BorderLayout());
+        rentedCarsPanel.setBorder(rentedCarsTitleBorder);
+
+        // Create the rented cars table and make it non-editable
+        List<Car> rentedCarsList = new ArrayList<>(); // Replace this with your actual rented cars list
+        JTable rentedCarsTable = createNonEditableCarTable(rentedCarsList);
+        rentedCarsTable.setPreferredScrollableViewportSize(new Dimension(rentedCarsTable.getPreferredSize().width, 200));
+
+        // Add the rentedCarsTable to the rentedCarsPanel
+        JScrollPane rentedCarsScrollPane = new JScrollPane(rentedCarsTable);
+        rentedCarsPanel.add(rentedCarsScrollPane, BorderLayout.CENTER);
+
+        // Add the rentedCarsPanel to the content panel (SOUTH)
+        contentPanel.add(rentedCarsPanel, BorderLayout.SOUTH);
+
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+    
+    private void setupAddButtonListener(JButton addButton, JPanel fieldsPanel) {
+        addButton.addActionListener(e -> addNewCar(fieldsPanel));
+    }
+
+    private void addNewCar(JPanel fieldsPanel) {
         // Extract data from fields
         String manufacturer = ((JTextField) fieldsPanel.getComponent(1)).getText();
         String model = ((JTextField) fieldsPanel.getComponent(3)).getText();
@@ -165,41 +235,13 @@ public class AdminMainWindow extends JFrame {
         }
 
         // Create a new car
-        Car newCar = new Car(manufacturer, model, registrationInfo, color, yearOfProduction, price, comfortLevel, additionalFeatures);
+        Car newCar = new Car(manufacturer, model, registrationInfo, color, yearOfProduction, price, false, comfortLevel, additionalFeatures);
 
         // Add the new car to the CarInventory
         authenticatedUser.addCar(newCar, carInventory);
 
         // Update the displayed table
         updateCarTable();
-    });
-    
-        // Rest of the car database view logic can be added here
-    
-        // Add the car information entry panel to the content panel
-        contentPanel.add(carInfoPanel, BorderLayout.NORTH);
-        // Create and add the table panel to the content panel (CENTER)
-        List<Car> carList = new ArrayList<>(carInventory.getCarMap().values());
-        carTable = createCarTable(carList);
-
-        // Create a titled border with a custom font and size for the table
-        TitledBorder tableTitleBorder = BorderFactory.createTitledBorder("Cars for Rent");
-        Font tableTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
-        tableTitleBorder.setTitleFont(tableTitleFont);
-
-        // Create a panel for the title and table
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBorder(tableTitleBorder);
-
-        // Add the carTable to the tablePanel
-        JScrollPane tableScrollPane = new JScrollPane(carTable);
-        tablePanel.add(tableScrollPane, BorderLayout.CENTER);
-
-        // Add the tablePanel to the content panel
-        contentPanel.add(tablePanel, BorderLayout.CENTER);
-
-        contentPanel.revalidate();
-        contentPanel.repaint();
     }
 
     private JTable createCarTable(List<Car> carList) {
@@ -310,7 +352,11 @@ public class AdminMainWindow extends JFrame {
             }
         });
 
-        // Create a panel to hold the "Delete" button
+        int windowHeight = 400;
+        int windowWidth = 700;
+        editPanel.setPreferredSize(new Dimension(windowWidth, windowHeight));
+
+        // Panel to hold the "Delete" button
         JPanel deletePanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         deletePanel.add(deleteButton);
 
@@ -400,5 +446,33 @@ public class AdminMainWindow extends JFrame {
         contentPanel.add(new JLabel("Rental History View"), BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
+    }
+
+    private JTable createNonEditableCarTable(List<Car> cars) {
+        String[] columnNames = {"Manufacturer", "Model", "Registration Info", "Color", "Year of Production", "Price", "Comfort Level", "Additional Features", "Rented"};
+    
+        Object[][] data = new Object[cars.size()][columnNames.length];
+    
+        for (int i = 0; i < cars.size(); i++) {
+            Car car = cars.get(i);
+            data[i][0] = car.getManufacturer();
+            data[i][1] = car.getModel();
+            data[i][2] = car.getRegistrationInfo();
+            data[i][3] = car.getColor();
+            data[i][4] = car.getYearOfProduction();
+            data[i][5] = car.getPrice();
+            data[i][6] = car.getComfortLevel();
+            data[i][7] = car.getAdditionalFeatures();
+            data[i][8] = car.getRentedStatus() ? "Yes" : "No";
+        }
+    
+        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Make all cells non-editable
+            }
+        };
+    
+        return new JTable(tableModel);
     }
 }
