@@ -51,4 +51,21 @@ public class CustomerAuthentication {
             logger.log(Level.SEVERE, "Error loading customer database from file", e);
         }
     }
+
+    public static void removeUser(String username) {
+        customerDatabase.remove(username);
+        saveCustomerDatabaseToFile();
+    }
+
+    public static void updateUser(String username, Customer updatedCustomer) {
+        // Check if the username exists in the database before updating
+        if (customerDatabase.containsKey(username)) {
+            // Update the customer information with the values from the updatedCustomer
+            customerDatabase.put(username, updatedCustomer);
+            saveCustomerDatabaseToFile();
+        } else {
+            logger.warning("Username not found. Cannot update user.");
+        }
+    }
+    
 }

@@ -108,5 +108,21 @@ public class CarInventory implements Serializable {
     
         return filteredCarsInventory;
     }
+
+    public boolean rentCar(String registrationInfo) {
+        Car selectedCar = carMap.get(registrationInfo);
+        if (selectedCar != null && !selectedCar.getRentedStatus()) {
+            selectedCar.setRentedStatus(true);
+    
+            // Updating the carList as well
+            int index = carList.indexOf(selectedCar);
+            if (index != -1) {
+                carList.set(index, selectedCar);
+                return true; // Operation successful
+            }
+        }
+        return false; // Operation failed    
+    }
+    
     
 }

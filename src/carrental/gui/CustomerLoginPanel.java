@@ -53,13 +53,13 @@ public class CustomerLoginPanel extends JPanel {
     String password = new String(passwordField.getPassword());
     String email = emailField.getText();
 
-    User authenticatedUser = CustomerAuthentication.authenticateUser(username, password, email);
+    Customer authenticatedUser = CustomerAuthentication.authenticateUser(username, password, email);
 
     if (authenticatedUser != null) {
         JOptionPane.showMessageDialog(this, "Customer Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
         // Create and show the CustomerMainWindow
-        CustomerMainWindow customerMainWindow = new CustomerMainWindow((Customer) authenticatedUser, carInventory);
+        CustomerMainWindow customerMainWindow = new CustomerMainWindow(authenticatedUser, carInventory);
         customerMainWindow.setVisible(true);
 
         // Close the current login window if needed

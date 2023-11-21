@@ -4,12 +4,9 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 import java.awt.*;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -256,7 +253,9 @@ public class CustomerMainWindow extends JFrame {
         unrentedCarsTable = new JTable(tableModel);
         adjustColumnSizes(unrentedCarsTable);
         // Set the auto-resize mode to adjust columns based on content
-        unrentedCarsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+        unrentedCarsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //TODO check if it works in the createTableModel and updataTable model instead of adjustColumnSizes
+        // Set the selection mode to allow single-row selection
+        unrentedCarsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     
         // Add the table to a scroll pane for better visibility
         return new JScrollPane(unrentedCarsTable);
@@ -315,16 +314,22 @@ public class CustomerMainWindow extends JFrame {
     private void rentSelectedCar() {
         // Get the selected row from the table
         int selectedRow = unrentedCarsTable.getSelectedRow();
+        int registrationInfoColumnIndex = 2;
     
         if (selectedRow >= 0) {
-            // Get the selected car from the table model
-            Car selectedCar = carInventory.getCarList().get(selectedRow);
-    
+            // Get the registration info of the selected car from the table model
+            String selectedRegistrationInfo = (String) unrentedCarsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
+
             // Perform the rental process (update car inventory, display confirmation, etc.)
-            //rentCar(selectedCar);
-    
-            // Optionally update the table with the new inventory
+            boolean success = carInventory.rentCar(selectedRegistrationInfo);
+
+            if (success) {
+            // Update the table with the new inventory
             updateTableWithSearchResults(carInventory.getUnrentedCars());
+            } else {
+                // Display a message indicating that the car was not found
+                JOptionPane.showMessageDialog(contentPanel, "Selected car not found.", "Car Not Found", JOptionPane.WARNING_MESSAGE);
+            }
         } else {
             // Display a message indicating that no car is selected
             JOptionPane.showMessageDialog(contentPanel, "Please select a car to rent.", "No Car Selected", JOptionPane.WARNING_MESSAGE);
@@ -332,10 +337,14 @@ public class CustomerMainWindow extends JFrame {
     }
 
     private void showAccountView() {
-        // Implement the logic to show the Account view in the content panel
-        // You might replace this with actual code to display the Account view
         contentPanel.removeAll();
-        contentPanel.add(new JLabel("Account View"), BorderLayout.CENTER);
+        // Create instances of RentalHistoryPanel and AccountPanel
+        RentalHistoryPanel rentalHistoryPanel = new RentalHistoryPanel();
+        AccountPanel accountPanel = new AccountPanel(customer);
+
+        // Add RentalHistoryPanel and AccountPanel to the content panel
+        contentPanel.add(accountPanel, BorderLayout.NORTH);
+        contentPanel.add(rentalHistoryPanel, BorderLayout.CENTER);
         contentPanel.revalidate();
         contentPanel.repaint();
     }
