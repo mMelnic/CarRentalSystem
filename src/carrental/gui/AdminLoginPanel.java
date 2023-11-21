@@ -52,9 +52,9 @@ public class AdminLoginPanel extends JPanel {
         String email = emailField.getText();
         Administrator authenticatedUser = AdminAuthentication.authenticateUser(username, password, email);
         if (authenticatedUser != null) {
+            JOptionPane.showMessageDialog(this, "Administrator Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             // Open a new window upon successful login
             openAdminMainWindow(authenticatedUser);
-            JOptionPane.showMessageDialog(this, "Administrator Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Administrator Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
         }

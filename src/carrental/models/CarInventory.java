@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import carrental.util.Serialization;
 
@@ -44,16 +45,6 @@ public class CarInventory implements Serializable {
         }
     }
 
-    public List<Car> filterCarsByModel(String model) {
-        List<Car> filteredCars = new ArrayList<>();
-        for (Car car : carList) {
-            if (car.getModel().equalsIgnoreCase(model)) {
-                filteredCars.add(car);
-            }
-        }
-        return filteredCars;
-    }
-
     public Map<String, Car> getCarMap() {
         return carMap;
     }
@@ -67,21 +58,55 @@ public class CarInventory implements Serializable {
     }
 
     public static CarInventory deserializeCarInventory(String filePath) {
-    try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
-        Object obj = inputStream.readObject();
-        if (obj instanceof CarInventory) {
-            return (CarInventory) obj;
-        } else {
-            System.out.println("Invalid file content. Unable to deserialize CarInventory.");
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
+            Object obj = inputStream.readObject();
+            if (obj instanceof CarInventory) {
+                return (CarInventory) obj;
+            } else {
+                System.out.println("Invalid file content. Unable to deserialize CarInventory.");
+                return null;
+            }
+        } catch (FileNotFoundException e) {
+            // Handle the case where the file does not exist
+            System.out.println("File not found. Creating a new CarInventory.");
+            return new CarInventory(); // Or create a new CarInventory instance
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
             return null;
         }
-    } catch (FileNotFoundException e) {
-        // Handle the case where the file does not exist
-        System.out.println("File not found. Creating a new CarInventory.");
-        return new CarInventory(); // Or create a new CarInventory instance
-    } catch (IOException | ClassNotFoundException e) {
-        e.printStackTrace();
-        return null;
     }
-}
+
+    public CarInventory getRentedCars() {
+        CarInventory rentedCarsInventory = new CarInventory();
+        for (Car car : carList) {
+            if (car.getRentedStatus()) {
+                rentedCarsInventory.addCar(car);
+            }
+        }
+        return rentedCarsInventory;
+    }
+
+    public CarInventory getUnrentedCars() {
+        CarInventory unrentedCarsInventory = new CarInventory();
+        for (Car car : carList) {
+            if (!car.getRentedStatus()) {
+                unrentedCarsInventory.addCar(car);
+            }
+        }
+        return unrentedCarsInventory;
+    }
+
+    public CarInventory searchWithMultipleCriteria(String manufacturer, String model, Car.ComfortLevel comfortLevel, Set<Car.AdditionalFeatures> features) {
+        CarInventory filteredCarsInventory = new CarInventory();
+    
+        carList.stream()
+                .filter(car -> (manufacturer == null || manufacturer.isEmpty() || car.getManufacturer().equalsIgnoreCase(manufacturer))
+                        && (model == null || model.isEmpty() || car.getModel().equalsIgnoreCase(model))
+                        && (comfortLevel == null || car.getComfortLevel() == comfortLevel)
+                        && (features == null || features.isEmpty() || car.getAdditionalFeatures().containsAll(features)))
+                .forEach(filteredCarsInventory::addCar);
+    
+        return filteredCarsInventory;
+    }
+    
 }

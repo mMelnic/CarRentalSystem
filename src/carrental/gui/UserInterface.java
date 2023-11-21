@@ -35,7 +35,7 @@ public class UserInterface extends JFrame {
     }
 
     private void openCustomerPanel() {
-        new CustomerLoginInterface(this);
+        new CustomerLoginInterface(this, carInventory);
         setVisible(false);
     }
 

@@ -6,27 +6,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import carrental.exceptions.AccountCreationException;
-import carrental.models.User;
+import carrental.models.Customer;
 
 public class CustomerAuthentication {
-    private static final Map<String, User> customerDatabase = new HashMap<>();
+    private static final Map<String, Customer> customerDatabase = new HashMap<>();
     private static final String CUSTOMER_DATABASE_FILE = "customer_database.ser";
     private static final Logger logger = Logger.getLogger(CustomerAuthentication.class.getName());
 
     // Private constructor to prevent instantiation
     private CustomerAuthentication() {}
 
-    public static void createUser(User user) throws AccountCreationException {
-        if (!user.isValidUser()) {
+    public static void createUser(Customer customer) throws AccountCreationException {
+        if (!customer.isValidUser()) {
             throw new AccountCreationException("Invalid user. Account not created.");
         }
 
-        customerDatabase.put(user.getUsername(), user);
+        customerDatabase.put(customer.getUsername(), customer);
         saveCustomerDatabaseToFile();
     }
 
-    public static User authenticateUser(String username, String password, String email) {
-        User user = customerDatabase.get(username);
+    public static Customer authenticateUser(String username, String password, String email) {
+        Customer user = customerDatabase.get(username);
         if (user != null && user.getPassword().equals(password) && user.getEmail().equals(email)) {
             return user;
         }
@@ -43,7 +43,7 @@ public class CustomerAuthentication {
         
             if (loadedObject instanceof Map) {
                 customerDatabase.clear();
-                customerDatabase.putAll((Map<String, User>) loadedObject);
+                customerDatabase.putAll((Map<String, Customer>) loadedObject);
             } else {
                 logger.severe("Loaded object is null or not an instance of Map");
             }

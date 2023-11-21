@@ -116,4 +116,32 @@ public class Car implements Serializable{
     public void setRentedStatus(boolean status) {
         isRented = status;
     }
+
+    public Object[] getCarData() {
+        Object[] carData = new Object[8]; // Adjust the size based on the number of attributes
+
+        carData[0] = manufacturer;
+        carData[1] = model;
+        carData[2] = registrationInfo;
+        carData[3] = color;
+        carData[4] = yearOfProduction;
+        carData[5] = price;
+        carData[6] = comfortLevel;
+        carData[7] = formatAdditionalFeatures(additionalFeatures);
+
+        return carData;
+    }
+
+    // Utility method to format additional features as a string
+    private String formatAdditionalFeatures(Set<AdditionalFeatures> features) {
+        StringBuilder featuresString = new StringBuilder();
+        for (AdditionalFeatures feature : features) {
+            featuresString.append(feature).append(", ");
+        }
+        // Remove the trailing ", " if features are present
+        if (featuresString.length() > 0) {
+            featuresString.delete(featuresString.length() - 2, featuresString.length());
+        }
+        return featuresString.toString();
+    }
 }
