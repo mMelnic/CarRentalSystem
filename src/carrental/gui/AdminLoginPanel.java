@@ -7,6 +7,7 @@ import javax.swing.*;
 import carrental.exceptions.AccountCreationException;
 import carrental.models.Administrator;
 import carrental.models.CarInventory;
+import carrental.models.RentalHistory;
 import carrental.util.AdminAuthentication;
 
 public class AdminLoginPanel extends JPanel {
@@ -18,7 +19,7 @@ public class AdminLoginPanel extends JPanel {
     private JButton createAccountButton;
     private CarInventory carInventory;
 
-    public AdminLoginPanel(CarInventory inventory) {
+    public AdminLoginPanel(CarInventory inventory, RentalHistory rentalHistory) {
         initComponents();
         setLayout(new GridLayout(5, 2));
         add(new JLabel("Username:"));
@@ -33,7 +34,7 @@ public class AdminLoginPanel extends JPanel {
         add(createAccountButton);
         carInventory = inventory;
 
-        loginButton.addActionListener(e -> adminLogin());
+        loginButton.addActionListener(e -> adminLogin(rentalHistory));
         createAccountButton.addActionListener(e -> adminCreateAccount());
     }
 
@@ -46,7 +47,7 @@ public class AdminLoginPanel extends JPanel {
         createAccountButton = new JButton("Create Account");
     }
 
-    private void adminLogin() {
+    private void adminLogin(RentalHistory rentalHistory) {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         String email = emailField.getText();
@@ -54,15 +55,15 @@ public class AdminLoginPanel extends JPanel {
         if (authenticatedUser != null) {
             JOptionPane.showMessageDialog(this, "Administrator Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
             // Open a new window upon successful login
-            openAdminMainWindow(authenticatedUser);
+            openAdminMainWindow(authenticatedUser, rentalHistory);
         } else {
             JOptionPane.showMessageDialog(this, "Administrator Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void openAdminMainWindow(Administrator authenticatedUser) {
+    private void openAdminMainWindow(Administrator authenticatedUser, RentalHistory rentalHistory) {
         // You can create and display a new window for the administrator here
-        AdminMainWindow adminMainWindow = new AdminMainWindow(authenticatedUser, carInventory);
+        AdminMainWindow adminMainWindow = new AdminMainWindow(authenticatedUser, carInventory,  rentalHistory);
         adminMainWindow.setVisible(true);
 
         // Close the current login window

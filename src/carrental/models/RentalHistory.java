@@ -1,12 +1,19 @@
 package carrental.models;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class RentalHistory {
+public class RentalHistory implements Serializable {
     private Map<String, List<RentalRecord>> customerRentalMap;
     private Map<Date, List<RentalRecord>> dateRentalMap;
 
@@ -35,6 +42,7 @@ public class RentalHistory {
         return dateRentalMap;
     }
 
+    //TODO delete the following two methods
     public List<RentalRecord> getRentalHistoryForCustomer(String customerUsername) {
         return customerRentalMap.getOrDefault(customerUsername, new ArrayList<>());
     }
@@ -69,12 +77,38 @@ public class RentalHistory {
 
     public RentalHistory getRentalHistoryForCustomerRH(String customerUsername) {
         RentalHistory filteredHistory = new RentalHistory();
-        List<RentalRecord> records = customerRentalMap.getOrDefault(customerUsername, new ArrayList<>());
-
-        for (RentalRecord myRecord : records) {
-            filteredHistory.addRentalRecord(myRecord);
+    
+        if (customerRentalMap != null) {
+            List<RentalRecord> records = customerRentalMap.getOrDefault(customerUsername, new ArrayList<>());
+    
+            for (RentalRecord myRecord : records) {
+                filteredHistory.addRentalRecord(myRecord);
+            }
         }
-
+    
         return filteredHistory;
     }
+    
+
+    // Save RentalHistory to a file
+    public void saveToFile(String filePath) {
+        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(filePath))) {
+            outputStream.writeObject(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static RentalHistory loadFromFile(String filePath) {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
+            return (RentalHistory) inputStream.readObject();
+        } catch (FileNotFoundException e) {
+            // File not found, create the file and return an empty RentalHistory
+            System.out.println("File not found. Creating a new RentalHistory.");
+            return new RentalHistory();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }    
 }

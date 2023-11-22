@@ -5,24 +5,30 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import java.awt.*;
+import com.toedter.calendar.JDateChooser;
 
+import java.awt.*;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import carrental.models.Car;
 import carrental.models.CarInventory;
 import carrental.models.Customer;
+import carrental.models.RentalHistory;
+import carrental.models.RentalRecord;
 
 public class CustomerMainWindow extends JFrame {
     private Customer customer;
     private CarInventory carInventory;
     private JPanel contentPanel;
     private JTable unrentedCarsTable;
+    RentalHistory customersRentalHistory;
 
-    public CustomerMainWindow(Customer customer, CarInventory carInventory) {
+    public CustomerMainWindow(Customer customer, CarInventory carInventory, RentalHistory entireRentalHistory) {
         this.customer = customer;
         this.carInventory = carInventory;
+        customersRentalHistory = entireRentalHistory;
         initializeComponents();
 
         // Add a WindowListener to handle window closing
@@ -31,6 +37,7 @@ public class CustomerMainWindow extends JFrame {
             public void windowClosing(java.awt.event.WindowEvent windowEvent) {
                 // Serialize the car inventory when the window is closing
                 carInventory.serializeCarInventory("carInventory.ser");
+                customersRentalHistory.saveToFile("rental_history.ser");
             }
         });
     }
@@ -88,8 +95,9 @@ public class CustomerMainWindow extends JFrame {
         reservationButton.addActionListener(e -> showReservationView());
         accountButton.addActionListener(e -> showAccountView());
         logoutButton.addActionListener(e -> {
-            new UserInterface(carInventory);
+            new UserInterface(carInventory, customersRentalHistory);
             carInventory.serializeCarInventory("carInventory.ser");
+            customersRentalHistory.saveToFile("rental_history.ser");
             dispose();
         });
 
@@ -220,30 +228,6 @@ public class CustomerMainWindow extends JFrame {
     
         return searchComponentsPanel;
     }
-
-    public void printCarList(CarInventory carInventory) {
-        System.out.println("Car Inventory Contents:");
-        for (Car car : carInventory.getCarList()) {
-            System.out.println("Manufacturer: " + car.getManufacturer());
-            System.out.println("Model: " + car.getModel());
-            System.out.println("Registration Info: " + car.getRegistrationInfo());
-            System.out.println("Color: " + car.getColor());
-            System.out.println("Year of Production: " + car.getYearOfProduction());
-            System.out.println("Price: " + car.getPrice());
-            System.out.println("Comfort Level: " + car.getComfortLevel());
-            
-            Set<Car.AdditionalFeatures> features = car.getAdditionalFeatures();
-            System.out.print("Additional Features: ");
-            if (!features.isEmpty()) {
-                for (Car.AdditionalFeatures feature : features) {
-                    System.out.print(feature + " ");
-                }
-            } else {
-                System.out.print("None");
-            }
-            System.out.println("\n---");
-        }
-    }
     
     private JScrollPane createTableScrollPane() {
         // Create a table model for the unrented cars
@@ -319,16 +303,25 @@ public class CustomerMainWindow extends JFrame {
         if (selectedRow >= 0) {
             // Get the registration info of the selected car from the table model
             String selectedRegistrationInfo = (String) unrentedCarsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
+            Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+            Date[] dateRange = showDateSelectionDialog(contentPanel);
 
-            // Perform the rental process (update car inventory, display confirmation, etc.)
-            boolean success = carInventory.rentCar(selectedRegistrationInfo);
-
-            if (success) {
-            // Update the table with the new inventory
-            updateTableWithSearchResults(carInventory.getUnrentedCars());
-            } else {
-                // Display a message indicating that the car was not found
-                JOptionPane.showMessageDialog(contentPanel, "Selected car not found.", "Car Not Found", JOptionPane.WARNING_MESSAGE);
+            if (dateRange != null) {
+                Date startDate = dateRange[0];
+                Date endDate = dateRange[1];
+    
+                // Perform the rental process (update car inventory, display confirmation, etc.)
+                boolean success = carInventory.rentCar(selectedCar);
+    
+                if (success) {
+                    // Update the table with the new inventory
+                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, 1000);
+                    customersRentalHistory.addRentalRecord(customerRecord);
+                    updateTableWithSearchResults(carInventory.getUnrentedCars());
+                } else {
+                    // Display a message indicating that the car was not found
+                    JOptionPane.showMessageDialog(contentPanel, "Selected car not found.", "Car Not Found", JOptionPane.WARNING_MESSAGE);
+                }
             }
         } else {
             // Display a message indicating that no car is selected
@@ -336,10 +329,39 @@ public class CustomerMainWindow extends JFrame {
         }
     }
 
+    public static Date[] showDateSelectionDialog(Component parentComponent) {
+        JPanel panel = new JPanel(new GridLayout(3, 2));
+        JDateChooser startDateChooser = new JDateChooser();
+        JDateChooser endDateChooser = new JDateChooser();
+
+        // Set a minimum date for the start and end date chooser
+        startDateChooser.setMinSelectableDate(new Date());
+        startDateChooser.addPropertyChangeListener("date", e -> {
+            endDateChooser.setMinSelectableDate(startDateChooser.getDate());
+        });
+        panel.add(new JLabel("Start Date:"));
+        panel.add(startDateChooser);
+        panel.add(new JLabel("End Date:"));
+        panel.add(endDateChooser);
+
+        int result = JOptionPane.showConfirmDialog(
+                parentComponent, panel, "Select Date Range",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            Date startDate = startDateChooser.getDate();
+            Date endDate = endDateChooser.getDate();
+            return new Date[]{startDate, endDate};
+        }
+
+        return null;
+    }
+
     private void showAccountView() {
         contentPanel.removeAll();
         // Create instances of RentalHistoryPanel and AccountPanel
-        RentalHistoryPanel rentalHistoryPanel = new RentalHistoryPanel();
+        RentalHistory currentCustomerHistory = customersRentalHistory.getRentalHistoryForCustomerRH(customer.getUsername());
+        RentalHistoryPanel rentalHistoryPanel = new RentalHistoryPanel(currentCustomerHistory);
         AccountPanel accountPanel = new AccountPanel(customer);
 
         // Add RentalHistoryPanel and AccountPanel to the content panel

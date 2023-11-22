@@ -5,6 +5,8 @@ import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -17,6 +19,7 @@ import carrental.models.Car;
 import carrental.models.Car.AdditionalFeatures;
 import carrental.models.Car.ComfortLevel;
 import carrental.models.CarInventory;
+import carrental.models.RentalHistory;
 
 public class AdminMainWindow extends JFrame {
     private Administrator authenticatedUser;
@@ -24,10 +27,10 @@ public class AdminMainWindow extends JFrame {
     private CarInventory carInventory;
     private JTable carTable; 
 
-    public AdminMainWindow(Administrator authenticatedUser, CarInventory carInventory) {
+    public AdminMainWindow(Administrator authenticatedUser, CarInventory carInventory, RentalHistory rentalHistory) {
         this.authenticatedUser = authenticatedUser;
         this.carInventory = carInventory;
-        initializeComponents();
+        initializeComponents(rentalHistory);
 
         // Add a WindowListener to handle window closing
         addWindowListener(new WindowAdapter() {
@@ -39,7 +42,7 @@ public class AdminMainWindow extends JFrame {
         });
     }
 
-    private void initializeComponents() {
+    private void initializeComponents(RentalHistory rentalHistory) {
         setTitle("Car Rental System");
         setSize(1000, 800);
         setLocationRelativeTo(null); // Center the window on the screen
@@ -48,7 +51,7 @@ public class AdminMainWindow extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Create a side panel for navigation
-        JPanel sidePanel = createSidePanel();
+        JPanel sidePanel = createSidePanel(rentalHistory);
         mainPanel.add(sidePanel, BorderLayout.WEST);
 
         // Initialize the content panel
@@ -66,7 +69,7 @@ public class AdminMainWindow extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    private JPanel createSidePanel() {
+    private JPanel createSidePanel(RentalHistory rentalHistory) {
         JPanel sidePanel = new JPanel();
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBorder(BorderFactory.createCompoundBorder(
@@ -88,9 +91,9 @@ public class AdminMainWindow extends JFrame {
 
         // Add action listeners for navigation buttons
         carDatabaseButton.addActionListener(e -> showCarDatabaseView());
-        rentalHistoryButton.addActionListener(e -> showRentalHistoryView());
+        rentalHistoryButton.addActionListener(e -> showRentalHistoryView(rentalHistory));
         logoutButton.addActionListener(e -> {
-            new UserInterface(carInventory);
+            new UserInterface(carInventory, rentalHistory);
             carInventory.serializeCarInventory("carInventory.ser");
             dispose();
         });
@@ -165,7 +168,7 @@ public class AdminMainWindow extends JFrame {
         contentPanel.add(carInfoPanel, BorderLayout.NORTH);
     
         // Create and add the table panel to the content panel (CENTER)
-        List<Car> carList = carInventory.getCarList();
+        List<Car> carList = carInventory.getUnrentedCars().getCarList();
         carTable = createCarTable(carList);
     
         // Create a titled border with a custom font and size for the table
@@ -194,13 +197,22 @@ public class AdminMainWindow extends JFrame {
         rentedCarsPanel.setBorder(rentedCarsTitleBorder);
 
         // Create the rented cars table and make it non-editable
-        List<Car> rentedCarsList = new ArrayList<>(); // Replace this with your actual rented cars list
+        List<Car> rentedCarsList = carInventory.getRentedCars().getCarList(); // Replace this with your actual rented cars list
         JTable rentedCarsTable = createNonEditableCarTable(rentedCarsList);
         rentedCarsTable.setPreferredScrollableViewportSize(new Dimension(rentedCarsTable.getPreferredSize().width, 200));
 
-        // Add the rentedCarsTable to the rentedCarsPanel
+        // Create a button to return the selected car
+        JButton returnSelectedCarButton = new JButton("Return Selected Car");
+        returnSelectedCarButton.addActionListener(createReturnSelectedCarActionListener(rentedCarsTable, carInventory));
+
+        // Add the rentedCarsTable and the button to the rentedCarsPanel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(returnSelectedCarButton);
+
         JScrollPane rentedCarsScrollPane = new JScrollPane(rentedCarsTable);
+        rentedCarsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         rentedCarsPanel.add(rentedCarsScrollPane, BorderLayout.CENTER);
+        rentedCarsPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Add the rentedCarsPanel to the content panel (SOUTH)
         contentPanel.add(rentedCarsPanel, BorderLayout.SOUTH);
@@ -212,6 +224,30 @@ public class AdminMainWindow extends JFrame {
     private void setupAddButtonListener(JButton addButton, JPanel fieldsPanel) {
         addButton.addActionListener(e -> addNewCar(fieldsPanel));
     }
+
+    private ActionListener createReturnSelectedCarActionListener(JTable rentedCarsTable, CarInventory carInventory) {
+        return (ActionEvent e) -> {
+            int selectedRow = rentedCarsTable.getSelectedRow();
+            int registrationInfoColumnIndex = 2;
+
+            if (selectedRow != -1) {
+                // Get the selected car from the table model
+                String selectedRegistrationInfo = (String) rentedCarsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
+                Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);  
+
+                // Call the returnCar method in your CarInventory to update the rental status
+                carInventory.returnCar(selectedCar);
+    
+                // Refresh the table model to reflect the changes
+                DefaultTableModel model = (DefaultTableModel) rentedCarsTable.getModel();
+                model.removeRow(selectedRow);
+                updateCarTable();
+            } else {
+                JOptionPane.showMessageDialog(null, "Please select a car to return.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        };
+    }
+    
 
     private void addNewCar(JPanel fieldsPanel) {
         // Extract data from fields
@@ -271,7 +307,7 @@ public class AdminMainWindow extends JFrame {
 
     private void updateCarTable() {
         // Retrieve the car data from the CarInventory
-        List<Car> carList = new ArrayList<>(carInventory.getCarMap().values());
+        List<Car> carList = new ArrayList<>(carInventory.getUnrentedCars().getCarMap().values());
     
         // Create and set the new data to the table model
         DefaultTableModel tableModel = (DefaultTableModel) carTable.getModel();
@@ -440,14 +476,6 @@ public class AdminMainWindow extends JFrame {
         return featuresPanel;
     }
 
-    private void showRentalHistoryView() {
-        // Logic to switch to the rental history view
-        contentPanel.removeAll();
-        contentPanel.add(new JLabel("Rental History View"), BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
     private JTable createNonEditableCarTable(List<Car> cars) {
         String[] columnNames = {"Manufacturer", "Model", "Registration Info", "Color", "Year of Production", "Price", "Comfort Level", "Additional Features", "Rented"};
     
@@ -474,5 +502,14 @@ public class AdminMainWindow extends JFrame {
         };
     
         return new JTable(tableModel);
+    }
+
+        private void showRentalHistoryView(RentalHistory rentalHistory) {
+        // Logic to switch to the rental history view
+        contentPanel.removeAll();
+        RentalHistorySearchPanel rentalHistoryPanel = new RentalHistorySearchPanel(rentalHistory);
+        contentPanel.add(rentalHistoryPanel);
+        contentPanel.revalidate();
+        contentPanel.repaint();
     }
 }

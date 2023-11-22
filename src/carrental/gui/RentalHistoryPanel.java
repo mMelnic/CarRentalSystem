@@ -18,11 +18,12 @@ import carrental.models.RentalRecord;
 public class RentalHistoryPanel extends JPanel {
     private JTextArea textArea;
 
-    public RentalHistoryPanel() {
+    public RentalHistoryPanel(RentalHistory rentalHistory) {
         textArea = new JTextArea();
         textArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+        printRentalHistoryForOneCustomer(rentalHistory);
         setBorder(new EmptyBorder(10, 10, 10, 10));
         setLayout(new BorderLayout());
         add(scrollPane, BorderLayout.CENTER);
@@ -31,18 +32,24 @@ public class RentalHistoryPanel extends JPanel {
     public void printRentalHistoryForOneCustomer(RentalHistory rentalHistory) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
-        // Assuming there is only one customer in the map
-        Map.Entry<String, List<RentalRecord>> entry = rentalHistory.getCustomerRentalMap().entrySet().iterator().next();
-        List<RentalRecord> rentalRecords = entry.getValue();
+        Map<String, List<RentalRecord>> customerRentalMap = rentalHistory.getCustomerRentalMap();
     
-        textArea.append("Rental history:\n");
-        for (RentalRecord rentalRecord : rentalRecords) {
-            Car rentedCar = rentalRecord.getRentedCar();
-            textArea.append("   Car: " + rentedCar.getManufacturer() +
-                    " " + rentedCar.getModel() +
-                    ", Base Price: " + rentedCar.getPrice() +
-                    ", Date: " + dateFormat.format(rentalRecord.getTransactionDate()) +
-                    ", Total Price: " + rentalRecord.getTotalPrice() + "\n");
+        if (!customerRentalMap.isEmpty()) {
+            // Assuming there is only one customer in the map
+            Map.Entry<String, List<RentalRecord>> entry = customerRentalMap.entrySet().iterator().next();
+            List<RentalRecord> rentalRecords = entry.getValue();
+    
+            textArea.append("Rental history:\n");
+            for (RentalRecord rentalRecord : rentalRecords) {
+                Car rentedCar = rentalRecord.getRentedCar();
+                textArea.append("   Car: " + rentedCar.getManufacturer() +
+                        " " + rentedCar.getModel() +
+                        ", Base Price: " + rentedCar.getPrice() +
+                        ", Date: " + dateFormat.format(rentalRecord.getTransactionDate()) +
+                        ", Total Price: " + rentalRecord.getTotalPrice() + "\n");
+            }
+        } else {
+            textArea.append("No rental history found for the customer.\n");
         }
     }
 

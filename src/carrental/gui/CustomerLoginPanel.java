@@ -7,6 +7,7 @@ import javax.swing.*;
 import carrental.exceptions.AccountCreationException;
 import carrental.models.CarInventory;
 import carrental.models.Customer;
+import carrental.models.RentalHistory;
 import carrental.models.User;
 import carrental.util.CustomerAuthentication;
 
@@ -18,9 +19,11 @@ public class CustomerLoginPanel extends JPanel {
     private JButton loginButton;
     private JButton createAccountButton;
     private CarInventory carInventory;
+    private RentalHistory rentalHistory;
 
-    public CustomerLoginPanel(CarInventory carInventory) {
+    public CustomerLoginPanel(CarInventory carInventory, RentalHistory rentalHistory) {
         this.carInventory = carInventory;
+        this.rentalHistory = rentalHistory;
         initComponents();
         setLayout(new GridLayout(5, 2));
 
@@ -59,7 +62,7 @@ public class CustomerLoginPanel extends JPanel {
         JOptionPane.showMessageDialog(this, "Customer Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
         // Create and show the CustomerMainWindow
-        CustomerMainWindow customerMainWindow = new CustomerMainWindow(authenticatedUser, carInventory);
+        CustomerMainWindow customerMainWindow = new CustomerMainWindow(authenticatedUser, carInventory, rentalHistory);
         customerMainWindow.setVisible(true);
 
         // Close the current login window if needed

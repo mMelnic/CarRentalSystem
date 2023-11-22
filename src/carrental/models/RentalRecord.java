@@ -1,8 +1,9 @@
 package carrental.models;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class RentalRecord {
+public class RentalRecord implements Serializable{
     private Car rentedCar;
     private Customer rentingCustomer;
     private double totalPrice;
