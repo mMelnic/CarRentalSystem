@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,9 +65,16 @@ public class RentalHistory implements Serializable {
     public RentalHistory getRentalHistoryInDateRangeRH(Date startDate, Date endDate) {
         RentalHistory filteredHistory = new RentalHistory();
 
+        // Convert Date to LocalDate
+        LocalDate startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate endLocalDate = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
         for (Map.Entry<Date, List<RentalRecord>> entry : dateRentalMap.entrySet()) {
             Date transactionDate = entry.getKey();
-            if (transactionDate.after(startDate) && transactionDate.before(endDate)) {
+            LocalDate transactionLocalDate = transactionDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+            // Compare only the date part
+            if (!transactionLocalDate.isBefore(startLocalDate) && !transactionLocalDate.isAfter(endLocalDate)) {
                 for (RentalRecord myRecord : entry.getValue()) {
                     filteredHistory.addRentalRecord(myRecord);
                 }

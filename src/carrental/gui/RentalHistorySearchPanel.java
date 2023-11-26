@@ -1,7 +1,6 @@
 package carrental.gui;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 
 import com.toedter.calendar.JDateChooser;
 
@@ -28,6 +27,11 @@ public class RentalHistorySearchPanel extends JPanel {
         endDateChooser = new JDateChooser();
         searchButton = new JButton("Search");
         showAllButton = new JButton("Show All");
+        // Set a minimum date for the start and end date chooser
+        startDateChooser.setMinSelectableDate(new Date());
+        startDateChooser.addPropertyChangeListener("date", e -> {
+            endDateChooser.setMinSelectableDate(startDateChooser.getDate());
+        });
 
         dateSelectionPanel.add(new JLabel("Start Date:"));
         dateSelectionPanel.add(startDateChooser);

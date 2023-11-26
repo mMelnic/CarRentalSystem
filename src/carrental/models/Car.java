@@ -1,7 +1,13 @@
 package carrental.models;
 
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class Car implements Serializable{
     private String manufacturer;
@@ -13,6 +19,8 @@ public class Car implements Serializable{
     private ComfortLevel comfortLevel;
     private Set<AdditionalFeatures> additionalFeatures;
     private boolean isRented;
+    private List<RentalInterval> rentalIntervals;
+    private static final long serialVersionUID = -9138178394279345304L;
 
     public enum ComfortLevel {
         BASIC,
@@ -41,6 +49,7 @@ public class Car implements Serializable{
         this.isRented = isRented;
         this.comfortLevel = comfortLevel;
         this.additionalFeatures = additionalFeatures;
+        this.rentalIntervals = new ArrayList<>();
     }
 
     // Getters and Setters for the attributes
@@ -143,5 +152,42 @@ public class Car implements Serializable{
             featuresString.delete(featuresString.length() - 2, featuresString.length());
         }
         return featuresString.toString();
+    }
+
+    public void addRentalInterval(UUID rentId, Date startDate, Date endDate) {
+        RentalInterval interval = new RentalInterval(rentId, startDate, endDate);
+        rentalIntervals.add(interval);
+    }
+
+    // Method to check if a given interval overlaps with any existing intervals
+    public boolean hasOverlap(Date newStartDate, Date newEndDate) {
+        for (RentalInterval interval : rentalIntervals) {
+            if (isOverlap(interval.getStartDate(), interval.getEndDate(), newStartDate, newEndDate)) {
+                return true; // Overlap found
+            }
+        }
+        return false; // No overlap found
+    }
+
+    // Helper method to check if two intervals overlap
+    private boolean isOverlap(Date start1, Date end1, Date start2, Date end2) {
+        LocalDate localStart1 = dateToLocalDate(start1);
+        LocalDate localEnd1 = dateToLocalDate(end1);
+        LocalDate localStart2 = dateToLocalDate(start2);
+        LocalDate localEnd2 = dateToLocalDate(end2);
+
+        return !localEnd1.isBefore(localStart2) && !localStart1.isAfter(localEnd2);
+    }
+
+    private LocalDate dateToLocalDate(Date date) {
+        return date.toInstant().atZone(Calendar.getInstance().getTimeZone().toZoneId()).toLocalDate();
+    }
+
+    public List<RentalInterval> getRentalIntervals() {
+        return rentalIntervals;
+    }
+
+    public void setRentalIntervals(List<RentalInterval> rentalIntervals) {
+        this.rentalIntervals = rentalIntervals;
     }
 }

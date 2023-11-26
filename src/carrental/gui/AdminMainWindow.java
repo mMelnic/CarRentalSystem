@@ -168,7 +168,7 @@ public class AdminMainWindow extends JFrame {
         contentPanel.add(carInfoPanel, BorderLayout.NORTH);
     
         // Create and add the table panel to the content panel (CENTER)
-        List<Car> carList = carInventory.getUnrentedCars().getCarList();
+        List<Car> carList = carInventory.getAvailableCarsInventoryToday().getCarList();
         carTable = createCarTable(carList);
     
         // Create a titled border with a custom font and size for the table
@@ -197,7 +197,7 @@ public class AdminMainWindow extends JFrame {
         rentedCarsPanel.setBorder(rentedCarsTitleBorder);
 
         // Create the rented cars table and make it non-editable
-        List<Car> rentedCarsList = carInventory.getRentedCars().getCarList(); // Replace this with your actual rented cars list
+        List<Car> rentedCarsList = carInventory.getUnavailableCarsInventoryToday().getCarList(); // Replace this with your actual rented cars list
         JTable rentedCarsTable = createNonEditableCarTable(rentedCarsList);
         rentedCarsTable.setPreferredScrollableViewportSize(new Dimension(rentedCarsTable.getPreferredSize().width, 200));
 
@@ -236,7 +236,7 @@ public class AdminMainWindow extends JFrame {
                 Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);  
 
                 // Call the returnCar method in your CarInventory to update the rental status
-                carInventory.returnCar(selectedCar);
+                carInventory.returnCarToday(selectedCar);
     
                 // Refresh the table model to reflect the changes
                 DefaultTableModel model = (DefaultTableModel) rentedCarsTable.getModel();
@@ -307,7 +307,7 @@ public class AdminMainWindow extends JFrame {
 
     private void updateCarTable() {
         // Retrieve the car data from the CarInventory
-        List<Car> carList = new ArrayList<>(carInventory.getUnrentedCars().getCarMap().values());
+        List<Car> carList = new ArrayList<>(carInventory.getAvailableCarsInventoryToday().getCarMap().values());
     
         // Create and set the new data to the table model
         DefaultTableModel tableModel = (DefaultTableModel) carTable.getModel();

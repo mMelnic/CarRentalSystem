@@ -181,13 +181,35 @@ public class CustomerMainWindow extends JFrame {
         JPanel row3Panel = new JPanel();
         row3Panel.add(searchButton);
         row3Panel.add(clearButton);
+
+        // Create JCalendar date choosers for start and end dates
+        JDateChooser startDateChooser = new JDateChooser();
+        JDateChooser endDateChooser = new JDateChooser();
+
+        // Set a minimum date for the start and end date chooser
+        startDateChooser.setMinSelectableDate(new Date());
+        startDateChooser.addPropertyChangeListener("date", e -> {
+            endDateChooser.setMinSelectableDate(startDateChooser.getDate());
+        });
+
+        // Set the date format for the date choosers
+        startDateChooser.setDateFormatString("yyyy-MM-dd");
+        endDateChooser.setDateFormatString("yyyy-MM-dd");
+
+        // Add date choosers to the UI
+        JPanel dateChooserPanel = new JPanel();
+        dateChooserPanel.add(new JLabel("Start Date:"));
+        dateChooserPanel.add(startDateChooser);
+        dateChooserPanel.add(new JLabel("End Date:"));
+        dateChooserPanel.add(endDateChooser);
     
         // Create a parent panel using GridLayout with 3 rows and 1 column
-        JPanel searchComponentsPanel = new JPanel(new GridLayout(3, 1));
+        JPanel searchComponentsPanel = new JPanel(new GridLayout(4, 1));
     
         // Add row panels to the parent panel
         searchComponentsPanel.add(row1Panel);
         searchComponentsPanel.add(row2Panel);
+        searchComponentsPanel.add(dateChooserPanel);
         searchComponentsPanel.add(row3Panel);
     
         // Add action listeners for search and clear buttons
@@ -196,6 +218,10 @@ public class CustomerMainWindow extends JFrame {
             String manufacturer = manufacturerField.getText();
             String model = modelField.getText();
             Car.ComfortLevel comfortLevel = (Car.ComfortLevel) comfortLevelComboBox.getSelectedItem();
+
+            // Get selected start and end dates
+            Date startDate = startDateChooser.getDate();
+            Date endDate = endDateChooser.getDate();
     
             // Create a set of selected additional features
             Set<Car.AdditionalFeatures> selectedFeatures = new HashSet<>();
@@ -207,7 +233,7 @@ public class CustomerMainWindow extends JFrame {
             if (hybridTechnologyCheckBox.isSelected()) selectedFeatures.add(Car.AdditionalFeatures.HYBRID_TECHNOLOGY);
 
             // Perform the search and update the table
-            CarInventory searchResults = customer.searchCarToRent(manufacturer, model, comfortLevel, selectedFeatures, carInventory);
+            CarInventory searchResults = customer.searchCarToRent(manufacturer, model, comfortLevel, selectedFeatures, startDate, endDate, carInventory);
             updateTableWithSearchResults(searchResults);
         });
     
@@ -222,8 +248,10 @@ public class CustomerMainWindow extends JFrame {
             leatherInteriorCheckBox.setSelected(false);
             sunroofCheckBox.setSelected(false);
             hybridTechnologyCheckBox.setSelected(false);
+            startDateChooser.setDate(null);
+            endDateChooser.setDate(null);
     
-            updateTableWithSearchResults(carInventory.getUnrentedCars());
+            updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
         });
     
         return searchComponentsPanel;
@@ -231,7 +259,7 @@ public class CustomerMainWindow extends JFrame {
     
     private JScrollPane createTableScrollPane() {
         // Create a table model for the unrented cars
-        DefaultTableModel tableModel = createTableModelForUnrentedCars(carInventory.getUnrentedCars());
+        DefaultTableModel tableModel = createTableModelForUnrentedCars(carInventory.getAvailableCarsInventoryToday());
     
         // Create a JTable with the table model
         unrentedCarsTable = new JTable(tableModel);
@@ -311,16 +339,17 @@ public class CustomerMainWindow extends JFrame {
                 Date endDate = dateRange[1];
     
                 // Perform the rental process (update car inventory, display confirmation, etc.)
-                boolean success = carInventory.rentCar(selectedCar);
+                boolean success = carInventory.rentCar(selectedCar, startDate, endDate);
     
                 if (success) {
                     // Update the table with the new inventory
-                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, 1000);
+                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, 1000, endDate);
+                    selectedCar.addRentalInterval(customerRecord.getRentId(), startDate, endDate);
                     customersRentalHistory.addRentalRecord(customerRecord);
-                    updateTableWithSearchResults(carInventory.getUnrentedCars());
+                    updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
                 } else {
                     // Display a message indicating that the car was not found
-                    JOptionPane.showMessageDialog(contentPanel, "Selected car not found.", "Car Not Found", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(contentPanel, "The car is unavailable for the selected period.", "Rental failed", JOptionPane.WARNING_MESSAGE);
                 }
             }
         } else {
