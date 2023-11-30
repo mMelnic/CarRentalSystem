@@ -42,11 +42,20 @@ public class RentalHistoryPanel extends JPanel {
             textArea.append("Rental history:\n");
             for (RentalRecord rentalRecord : rentalRecords) {
                 Car rentedCar = rentalRecord.getRentedCar();
-                textArea.append("   Car: " + rentedCar.getManufacturer() +
-                        " " + rentedCar.getModel() +
-                        ", Base Price: " + rentedCar.getPrice() +
-                        ", Date: " + dateFormat.format(rentalRecord.getTransactionDate()) +
-                        ", Total Price: " + rentalRecord.getTotalPrice() + "\n");
+                if (rentalRecord.getCancelled()) {
+                    textArea.append("   Car: " + rentedCar.getManufacturer() +
+                            " " + rentedCar.getModel() +
+                            ", Base Price: " + rentedCar.getPrice() +
+                            ", Date: " + dateFormat.format(rentalRecord.getTransactionDate()) +
+                            ", Total Price: " + rentalRecord.getTotalPrice() +
+                            ", Status: Cancelled\n");
+                } else {
+                    textArea.append("   Car: " + rentedCar.getManufacturer() +
+                            " " + rentedCar.getModel() +
+                            ", Base Price: " + rentedCar.getPrice() +
+                            ", Date: " + dateFormat.format(rentalRecord.getTransactionDate()) +
+                            ", Total Price: " + rentalRecord.getTotalPrice() + "\n");
+                }
             }
         } else {
             textArea.append("No rental history found for the customer.\n");

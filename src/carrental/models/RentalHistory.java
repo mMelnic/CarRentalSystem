@@ -18,10 +18,13 @@ import java.util.Map;
 public class RentalHistory implements Serializable {
     private Map<String, List<RentalRecord>> customerRentalMap;
     private Map<Date, List<RentalRecord>> dateRentalMap;
+    private Map<String, Integer> numberOfReservationsMap;
+    private static final long serialVersionUID = 9077929968150495859L;
 
     public RentalHistory() {
         this.customerRentalMap = new HashMap<>();
         this.dateRentalMap = new HashMap<>();
+        this.numberOfReservationsMap = new HashMap<>();
     }
 
     public void addRentalRecord(RentalRecord rentalRecord) {
@@ -32,6 +35,13 @@ public class RentalHistory implements Serializable {
         // Add to date-based map
         Date transactionDate = rentalRecord.getTransactionDate();
         dateRentalMap.computeIfAbsent(transactionDate, k -> new ArrayList<>()).add(rentalRecord);
+
+        // Increment the number of reservations for the customer
+        numberOfReservationsMap.merge(customerIdentifier, 1, Integer::sum);
+    }
+
+    public int getNumberOfReservationsForCustomer(String customerUsername) {
+        return numberOfReservationsMap.getOrDefault(customerUsername, 0);
     }
 
     // Getters for the maps
@@ -44,25 +54,7 @@ public class RentalHistory implements Serializable {
         return dateRentalMap;
     }
 
-    //TODO delete the following two methods
-    public List<RentalRecord> getRentalHistoryForCustomer(String customerUsername) {
-        return customerRentalMap.getOrDefault(customerUsername, new ArrayList<>());
-    }
-
-    public List<RentalRecord> getRentalHistoryInDateRange(Date startDate, Date endDate) {
-        List<RentalRecord> result = new ArrayList<>();
-
-        for (Map.Entry<Date, List<RentalRecord>> entry : dateRentalMap.entrySet()) {
-            Date transactionDate = entry.getKey();
-            if (transactionDate.after(startDate) && transactionDate.before(endDate)) {
-                result.addAll(entry.getValue());
-            }
-        }
-
-        return result;
-    }
-
-    public RentalHistory getRentalHistoryInDateRangeRH(Date startDate, Date endDate) {
+    public RentalHistory getRentalHistoryInDateRange(Date startDate, Date endDate) {
         RentalHistory filteredHistory = new RentalHistory();
 
         // Convert Date to LocalDate
@@ -84,7 +76,7 @@ public class RentalHistory implements Serializable {
         return filteredHistory;
     }
 
-    public RentalHistory getRentalHistoryForCustomerRH(String customerUsername) {
+    public RentalHistory getRentalHistoryForCustomer(String customerUsername) {
         RentalHistory filteredHistory = new RentalHistory();
     
         if (customerRentalMap != null) {

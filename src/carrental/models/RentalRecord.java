@@ -10,16 +10,16 @@ public class RentalRecord implements Serializable{
     private double totalPrice;
     private Date transactionDate;
     private UUID rentId;
-    private Date returnDate;
+    private boolean isCancelled;
     private static final long serialVersionUID = 6521755512973389801L;
 
-    public RentalRecord(Car rentedCar, Customer rentingCustomer, double totalPrice, Date returnDate) {
+    public RentalRecord(Car rentedCar, Customer rentingCustomer, double totalPrice) {
         this.rentedCar = rentedCar;
         this.rentingCustomer = rentingCustomer;
         this.totalPrice = totalPrice;
         this.transactionDate = new Date(); // Current date
         this.rentId = UUID.randomUUID();
-        this.returnDate = returnDate;
+        isCancelled = false;
     }
 
     // Getters and setters for the fields
@@ -60,12 +60,20 @@ public class RentalRecord implements Serializable{
         return rentId;
     }
 
-    public void setReturnDate(Date returnDate) {
-        this.returnDate = returnDate;
+    public void setCancelled(boolean isCancelled) {
+        this.isCancelled = isCancelled;
     }
 
-    public Date getReturnDate() {
-        return returnDate;
+    public boolean getCancelled() {
+        return isCancelled;
+    }
+
+    public boolean isModificationAllowed() {
+        // Check if the modification is allowed
+        if (rentedCar != null) {
+            return rentedCar.isModificationAllowed(rentId);
+        }
+        return false; // Modification not allowed if rentedCar is null
     }
 
 }

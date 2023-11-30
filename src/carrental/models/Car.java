@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -18,7 +19,6 @@ public class Car implements Serializable{
     private double price;
     private ComfortLevel comfortLevel;
     private Set<AdditionalFeatures> additionalFeatures;
-    private boolean isRented;
     private List<RentalInterval> rentalIntervals;
     private static final long serialVersionUID = -9138178394279345304L;
 
@@ -39,14 +39,13 @@ public class Car implements Serializable{
     }
 
     public Car(String manufacturer, String model, String registrationInfo, String color, int yearOfProduction,
-               double price, boolean isRented, ComfortLevel comfortLevel, Set<AdditionalFeatures> additionalFeatures) {
+               double price, ComfortLevel comfortLevel, Set<AdditionalFeatures> additionalFeatures) {
         this.manufacturer = manufacturer;
         this.model = model;
         this.registrationInfo = registrationInfo;
         this.color = color;
         this.yearOfProduction = yearOfProduction;
         this.price = price;
-        this.isRented = isRented;
         this.comfortLevel = comfortLevel;
         this.additionalFeatures = additionalFeatures;
         this.rentalIntervals = new ArrayList<>();
@@ -118,14 +117,6 @@ public class Car implements Serializable{
         this.additionalFeatures = additionalFeatures;
     }
 
-    public boolean getRentedStatus() {
-        return isRented;
-    }
-
-    public void setRentedStatus(boolean status) {
-        isRented = status;
-    }
-
     public Object[] getCarData() {
         Object[] carData = new Object[8]; // Adjust the size based on the number of attributes
 
@@ -190,4 +181,52 @@ public class Car implements Serializable{
     public void setRentalIntervals(List<RentalInterval> rentalIntervals) {
         this.rentalIntervals = rentalIntervals;
     }
+
+    public boolean modifyReservation(UUID rentId, Date newStartDate, Date newEndDate) {
+        // Check if the modification is allowed
+        if (!hasOverlap(newStartDate, newEndDate)) {
+            // Remove the existing rental interval with the given rentId
+            rentalIntervals.removeIf(interval -> interval.getRentId().equals(rentId));
+
+            // Add the new rental interval
+            RentalInterval newInterval = new RentalInterval(rentId, newStartDate, newEndDate);
+            rentalIntervals.add(newInterval);
+
+            return true; // Return true if the modification is successful
+        }
+        return false;
+    }
+    
+    public boolean isModificationAllowed(UUID rentId) {
+        // Find the existing rental interval with the given rentID
+        RentalInterval existingInterval = rentalIntervals.stream()
+                .filter(interval -> interval.getRentId().equals(rentId))
+                .findFirst()
+                .orElse(null);
+
+        // Check if the existing start date is more than 5 days in the future
+        if (existingInterval != null) {
+            LocalDate existingStartDate = dateToLocalDate(existingInterval.getStartDate());
+            LocalDate currentDate = dateToLocalDate(new Date());
+
+            // Check if the existing start date is more than 5 days in the future
+            return existingStartDate.isAfter(currentDate.plusDays(5));
+        }
+
+        // If the existing interval is not found, consider it allowed
+        return true;
+    }
+
+    public void removeRentalInterval(UUID rentId) {
+        Iterator<RentalInterval> iterator = rentalIntervals.iterator();
+
+        while (iterator.hasNext()) {
+            RentalInterval interval = iterator.next();
+            if (interval.getRentId().equals(rentId)) {
+                iterator.remove();
+                break; // Assuming rent IDs are unique, exit loop after removal
+            }
+        }
+    }
+
 }

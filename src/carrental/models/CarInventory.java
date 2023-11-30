@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import carrental.util.Serialization;
 
@@ -122,27 +123,6 @@ public class CarInventory implements Serializable {
         return false; // Car is not rented today
     }
 
-
-    public CarInventory getRentedCars() {
-        CarInventory rentedCarsInventory = new CarInventory();
-        for (Car car : carList) {
-            if (car.getRentedStatus()) {
-                rentedCarsInventory.addCar(car);
-            }
-        }
-        return rentedCarsInventory;
-    }
-
-    public CarInventory getUnrentedCars() {
-        CarInventory unrentedCarsInventory = new CarInventory();
-        for (Car car : carList) {
-            if (!car.getRentedStatus()) {
-                unrentedCarsInventory.addCar(car);
-            }
-        }
-        return unrentedCarsInventory;
-    }
-
     public CarInventory searchWithMultipleCriteria(String manufacturer, String model, Car.ComfortLevel comfortLevel,
             Set<Car.AdditionalFeatures> features, Date startDate, Date endDate) {
         LocalDate localStartDate = dateToLocalDate(startDate);
@@ -177,7 +157,7 @@ public class CarInventory implements Serializable {
     }
 
     public boolean rentCar(Car selectedCar, Date startDate, Date endDate) {
-        if (selectedCar != null && !selectedCar.getRentedStatus() && !selectedCar.hasOverlap(startDate, endDate)) {
+        if (selectedCar != null && !selectedCar.hasOverlap(startDate, endDate)) {
     
             // Updating the carList as well
             int index = carList.indexOf(selectedCar);
@@ -205,5 +185,13 @@ public class CarInventory implements Serializable {
                 return; // End the loop after modifying the interval
             }
         }
+    }
+
+    public boolean modifyReservation(String registrationInfo, UUID rentId, Date newStartDate, Date newEndDate) {
+        Car car = carMap.get(registrationInfo);
+        if (car != null) {
+            return car.modifyReservation(rentId, newStartDate, newEndDate);
+        }
+        return false;
     }
 }

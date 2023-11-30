@@ -277,7 +277,7 @@ public class AdminMainWindow extends JFrame {
         }
 
         // Create a new car
-        Car newCar = new Car(manufacturer, model, registrationInfo, color, yearOfProduction, price, false, comfortLevel, additionalFeatures);
+        Car newCar = new Car(manufacturer, model, registrationInfo, color, yearOfProduction, price, comfortLevel, additionalFeatures);
 
         // Add the new car to the CarInventory
         authenticatedUser.addCar(newCar, carInventory);
@@ -483,7 +483,7 @@ public class AdminMainWindow extends JFrame {
     }
 
     private JTable createNonEditableCarTable(List<Car> cars) {
-        String[] columnNames = {"Manufacturer", "Model", "Registration Info", "Color", "Year of Production", "Price", "Comfort Level", "Additional Features", "Rented"};
+        String[] columnNames = {"Manufacturer", "Model", "Registration Info", "Color", "Year of Production", "Price", "Comfort Level", "Additional Features"};
     
         Object[][] data = new Object[cars.size()][columnNames.length];
     
@@ -497,7 +497,6 @@ public class AdminMainWindow extends JFrame {
             data[i][5] = car.getPrice();
             data[i][6] = car.getComfortLevel();
             data[i][7] = car.getAdditionalFeatures();
-            data[i][8] = car.getRentedStatus() ? "Yes" : "No";
         }
     
         DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {

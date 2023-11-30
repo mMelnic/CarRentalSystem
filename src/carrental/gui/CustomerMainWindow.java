@@ -18,6 +18,7 @@ import carrental.models.Customer;
 import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.models.RentalRecord;
+import carrental.util.CustomerProgressTracker;
 import carrental.util.PricingCalculation;
 
 public class CustomerMainWindow extends JFrame {
@@ -27,12 +28,15 @@ public class CustomerMainWindow extends JFrame {
     private JTable unrentedCarsTable;
     private RentalHistory customersRentalHistory;
     private PricingAttributes pricingAttributes;
+    private CustomerProgressTracker progressTracker;
 
     public CustomerMainWindow(Customer customer, CarInventory carInventory, RentalHistory entireRentalHistory, PricingAttributes pricingAttributes) {
         this.customer = customer;
         this.carInventory = carInventory;
         customersRentalHistory = entireRentalHistory;
         this.pricingAttributes = pricingAttributes;
+        this.progressTracker = new CustomerProgressTracker();
+        progressTracker.updateProgress(customer.getUsername(), customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
         initializeComponents();
 
         // Add a WindowListener to handle window closing
@@ -352,10 +356,12 @@ public class CustomerMainWindow extends JFrame {
                     double additionalServicesPrice = PricingCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
                             pricingAttributes);
                     double finalPrice = PricingCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
-                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, finalPrice, endDate);
+                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, finalPrice);
                     PricingCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
                     selectedCar.addRentalInterval(customerRecord.getRentId(), startDate, endDate);
                     customersRentalHistory.addRentalRecord(customerRecord);
+                    customer.checkAndUpgrade(customersRentalHistory);
+                    progressTracker.updateProgress(customer.getUsername(), customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
                     updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
                 } else {
                     // Display a message indicating that the car was not found
@@ -398,14 +404,36 @@ public class CustomerMainWindow extends JFrame {
 
     private void showAccountView() {
         contentPanel.removeAll();
+
         // Create instances of RentalHistoryPanel and AccountPanel
-        RentalHistory currentCustomerHistory = customersRentalHistory.getRentalHistoryForCustomerRH(customer.getUsername());
+        RentalHistory currentCustomerHistory = customersRentalHistory
+                .getRentalHistoryForCustomer(customer.getUsername());
         RentalHistoryPanel rentalHistoryPanel = new RentalHistoryPanel(currentCustomerHistory);
         AccountPanel accountPanel = new AccountPanel(customer);
+        CustomerProgressBarPanel progressBarPanel = new CustomerProgressBarPanel(progressTracker,
+                customer.getUsername(),
+                customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
 
-        // Add RentalHistoryPanel and AccountPanel to the content panel
-        contentPanel.add(accountPanel, BorderLayout.NORTH);
+        // Create FutureReservationsPanel with the customer's rental records
+        FutureReservationsPanel futureReservationsPanel = new FutureReservationsPanel(
+                currentCustomerHistory.getCustomerRentalMap().get(customer.getUsername()), customersRentalHistory, carInventory);
+
+        // Create a container panel with vertical BoxLayout
+        JPanel northPanel = new JPanel();
+        northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
+        northPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 30, 10)); // Adjust the values as needed
+
+        // Add AccountPanel, CustomerProgressBarPanel, and FutureReservationsPanel to
+        // the container panel
+        northPanel.add(accountPanel);
+        northPanel.add(progressBarPanel);
+        northPanel.add(Box.createRigidArea(new Dimension(0, 25))); // Adjust the height (10 in this case) as needed
+        northPanel.add(futureReservationsPanel);
+
+        // Add the container panel to the content panel
+        contentPanel.add(northPanel, BorderLayout.NORTH);
         contentPanel.add(rentalHistoryPanel, BorderLayout.CENTER);
+
         contentPanel.revalidate();
         contentPanel.repaint();
     }

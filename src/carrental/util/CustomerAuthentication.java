@@ -6,7 +6,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import carrental.exceptions.AccountCreationException;
+import carrental.models.BronzeCustomer;
 import carrental.models.Customer;
+import carrental.models.GoldCustomer;
+import carrental.models.SilverCustomer;
 
 public class CustomerAuthentication {
     private static final Map<String, Customer> customerDatabase = new HashMap<>();
@@ -68,4 +71,37 @@ public class CustomerAuthentication {
         }
     }
     
+    public static void upgradeCustomerToBronze(String username) {
+        Customer customer = customerDatabase.get(username);
+
+        if (customer != null && !(customer instanceof BronzeCustomer)) {
+            BronzeCustomer bronzeCustomer = new BronzeCustomer(
+                customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
+            );
+            updateUser(username, bronzeCustomer);
+            System.out.println("Bronze update");
+        }
+    }
+
+    public static void upgradeCustomerToSilver(String username) {
+        Customer customer = customerDatabase.get(username);
+
+        if (customer != null && !(customer instanceof SilverCustomer)) {
+            SilverCustomer silverCustomer = new SilverCustomer(
+                customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
+            );
+            updateUser(username, silverCustomer);
+        }
+    }
+
+    public static void upgradeCustomerToGold(String username) {
+        Customer customer = customerDatabase.get(username);
+
+        if (customer != null && !(customer instanceof GoldCustomer)) {
+            GoldCustomer goldCustomer = new GoldCustomer(
+                customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
+            );
+            updateUser(username, goldCustomer);
+        }
+    }
 }

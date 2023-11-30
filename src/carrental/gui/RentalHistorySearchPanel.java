@@ -56,7 +56,7 @@ public class RentalHistorySearchPanel extends JPanel {
 
                 if (startDate != null && endDate != null) {
                     // Filter rental history based on date range
-                    RentalHistory filteredHistory = rentalHistory.getRentalHistoryInDateRangeRH(startDate, endDate);
+                    RentalHistory filteredHistory = rentalHistory.getRentalHistoryInDateRange(startDate, endDate);
                     updateRentalHistoryTable(filteredHistory);
                 }
         });
