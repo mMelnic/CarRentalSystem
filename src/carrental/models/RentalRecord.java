@@ -10,7 +10,6 @@ public class RentalRecord implements Serializable{
     private double totalPrice;
     private Date transactionDate;
     private UUID rentId;
-    private double lateFee;
     private Date returnDate;
     private static final long serialVersionUID = 6521755512973389801L;
 
@@ -21,7 +20,6 @@ public class RentalRecord implements Serializable{
         this.transactionDate = new Date(); // Current date
         this.rentId = UUID.randomUUID();
         this.returnDate = returnDate;
-        lateFee = 0;
     }
 
     // Getters and setters for the fields
@@ -60,14 +58,6 @@ public class RentalRecord implements Serializable{
 
     public UUID getRentId() {
         return rentId;
-    }
-
-    public void setLateFee(double lateFee) {
-        this.lateFee = lateFee;
-    }
-
-    public double getLateFee() {
-        return lateFee;
     }
 
     public void setReturnDate(Date returnDate) {

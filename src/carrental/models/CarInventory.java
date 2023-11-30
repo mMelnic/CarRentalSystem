@@ -66,7 +66,7 @@ public class CarInventory implements Serializable {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
             Object obj = inputStream.readObject();
             if (obj instanceof CarInventory) {
-                return (CarInventory) obj;
+                return (CarInventory) obj;   //TODO use deserialization method from Serialization class
             } else {
                 System.out.println("Invalid file content. Unable to deserialize CarInventory.");
                 return null;

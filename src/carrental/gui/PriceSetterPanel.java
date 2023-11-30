@@ -1,0 +1,167 @@
+package carrental.gui;
+
+import java.awt.GridLayout;
+
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
+
+import carrental.models.PricingAttributes;
+
+public class PriceSetterPanel extends JPanel {
+    private PricingAttributes pricingAttributes;
+
+    private JTextField weeklyDiscountRateField;
+    private JTextField monthlyDiscountRateField;
+    private JTextField peakSeasonRateMultiplierField;
+    private JTextField peakSeasonStartMonthField;
+    private JTextField peakSeasonEndMonthField;
+    private JTextField gpsServiceChargeField;
+    private JTextField insuranceChargeField;
+    private JTextField childSeatChargeField;
+    private JTextField leatherInteriorChargeField;
+    private JTextField sunroofChargeField;
+    private JTextField hybridTechnologyChargeField;
+
+    public PriceSetterPanel(PricingAttributes pricingAttributes) {
+        this.pricingAttributes = pricingAttributes;
+
+        setLayout(new GridLayout(12, 1));
+        setBorder(new EmptyBorder(50, 60, 300, 150));
+
+        add(new JLabel("Weekly Discount Rate:"));
+        weeklyDiscountRateField = new JTextField();
+        add(weeklyDiscountRateField);
+
+        add(new JLabel("Monthly Discount Rate:"));
+        monthlyDiscountRateField = new JTextField();
+        add(monthlyDiscountRateField);
+
+        add(new JLabel("Peak Season Rate Multiplier:"));
+        peakSeasonRateMultiplierField = new JTextField();
+        add(peakSeasonRateMultiplierField);
+
+        add(new JLabel("Peak Season Start Month:"));
+        peakSeasonStartMonthField = new JTextField();
+        add(peakSeasonStartMonthField);
+
+        add(new JLabel("Peak Season End Month:"));
+        peakSeasonEndMonthField = new JTextField();
+        add(peakSeasonEndMonthField);
+
+        add(new JLabel("GPS Service Charge:"));
+        gpsServiceChargeField = new JTextField();
+        add(gpsServiceChargeField);
+
+        add(new JLabel("Insurance Charge:"));
+        insuranceChargeField = new JTextField();
+        add(insuranceChargeField);
+
+        add(new JLabel("Child Seat Charge:"));
+        childSeatChargeField = new JTextField();
+        add(childSeatChargeField);
+
+        add(new JLabel("Leather Interior Charge:"));
+        leatherInteriorChargeField = new JTextField();
+        add(leatherInteriorChargeField);
+
+        add(new JLabel("Sunroof Charge:"));
+        sunroofChargeField = new JTextField();
+        add(sunroofChargeField);
+
+        add(new JLabel("Hybrid Technology Charge:"));
+        hybridTechnologyChargeField = new JTextField();
+        add(hybridTechnologyChargeField);
+        add(new JLabel());
+
+        if (pricingAttributes != null) {
+            populateFields();
+        }
+
+        JButton setValuesButton = new JButton("Set Values");
+        setValuesButton.addActionListener(e -> {
+            if (validateFields()) {
+                setPricingAttributes();
+                pricingAttributes.serializePricingAttributes("pricingAttributes.ser");
+                JOptionPane.showMessageDialog(null, "Values set successfully!"); // TODO after the success of serialize
+            } else {
+                JOptionPane.showMessageDialog(null, "Please fill in all fields.");
+            }
+        });
+        add(setValuesButton);
+    }
+
+    private void setPricingAttributes() {
+        // Check if pricingAttributes is null and instantiate it if necessary
+        if (pricingAttributes == null) {
+            pricingAttributes = new PricingAttributes(); // Or initialize it in a way that makes sense for your
+                                                         // application
+        }
+
+        // Now you can safely set the attributes
+        pricingAttributes.setWeeklyDiscountRate(parseDouble(weeklyDiscountRateField.getText()));
+        pricingAttributes.setMonthlyDiscountRate(parseDouble(monthlyDiscountRateField.getText()));
+        pricingAttributes.setPeakSeasonRateMultiplier(parseDouble(peakSeasonRateMultiplierField.getText()));
+        pricingAttributes.setPeakSeasonStartMonth(parseInt(peakSeasonStartMonthField.getText()));
+        pricingAttributes.setPeakSeasonEndMonth(parseInt(peakSeasonEndMonthField.getText()));
+        pricingAttributes.setGpsServiceCharge(parseDouble(gpsServiceChargeField.getText()));
+        pricingAttributes.setInsuranceCharge(parseDouble(insuranceChargeField.getText()));
+        pricingAttributes.setChildSeatCharge(parseDouble(childSeatChargeField.getText()));
+        pricingAttributes.setLeatherInteriorCharge(parseDouble(leatherInteriorChargeField.getText()));
+        pricingAttributes.setSunroofCharge(parseDouble(sunroofChargeField.getText()));
+        pricingAttributes.setHybridTechnologyCharge(parseDouble(hybridTechnologyChargeField.getText()));
+    }
+
+    private void populateFields() {
+        weeklyDiscountRateField.setText(String.valueOf(pricingAttributes.getWeeklyDiscountRate()));
+        monthlyDiscountRateField.setText(String.valueOf(pricingAttributes.getMonthlyDiscountRate()));
+        peakSeasonRateMultiplierField.setText(String.valueOf(pricingAttributes.getPeakSeasonRateMultiplier()));
+        peakSeasonStartMonthField.setText(String.valueOf(pricingAttributes.getPeakSeasonStartMonth()));
+        peakSeasonEndMonthField.setText(String.valueOf(pricingAttributes.getPeakSeasonEndMonth()));
+        gpsServiceChargeField.setText(String.valueOf(pricingAttributes.getGpsServiceCharge()));
+        insuranceChargeField.setText(String.valueOf(pricingAttributes.getInsuranceCharge()));
+        childSeatChargeField.setText(String.valueOf(pricingAttributes.getChildSeatCharge()));
+        leatherInteriorChargeField.setText(String.valueOf(pricingAttributes.getLeatherInteriorCharge()));
+        sunroofChargeField.setText(String.valueOf(pricingAttributes.getSunroofCharge()));
+        hybridTechnologyChargeField.setText(String.valueOf(pricingAttributes.getHybridTechnologyCharge()));
+    }
+
+    private boolean validateFields() {
+        return !weeklyDiscountRateField.getText().isEmpty()
+                && !monthlyDiscountRateField.getText().isEmpty()
+                && !peakSeasonRateMultiplierField.getText().isEmpty()
+                && !peakSeasonStartMonthField.getText().isEmpty()
+                && !peakSeasonEndMonthField.getText().isEmpty()
+                && !gpsServiceChargeField.getText().isEmpty()
+                && !insuranceChargeField.getText().isEmpty()
+                && !childSeatChargeField.getText().isEmpty()
+                && !leatherInteriorChargeField.getText().isEmpty()
+                && !sunroofChargeField.getText().isEmpty()
+                && !hybridTechnologyChargeField.getText().isEmpty();
+    }
+
+    public PricingAttributes getPricingAttributes() {
+        return pricingAttributes;
+    }
+
+    private double parseDouble(String text) {
+        try {
+            return Double.parseDouble(text);
+        } catch (NumberFormatException e) {
+            // Handle parsing error, e.g., show an error message
+            return 0.0;
+        }
+    }
+
+    private int parseInt(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            // Handle parsing error, e.g., show an error message
+            return 0;
+        }
+    }
+}

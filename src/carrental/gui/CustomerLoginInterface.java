@@ -6,6 +6,7 @@ import java.awt.CardLayout;
 import javax.swing.*;
 
 import carrental.models.CarInventory;
+import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 
 public class CustomerLoginInterface extends JFrame{
@@ -13,7 +14,7 @@ public class CustomerLoginInterface extends JFrame{
     private CardLayout cardLayout;
     private JButton backButton;
 
-    public CustomerLoginInterface(JFrame mainInterface, CarInventory carInventory, RentalHistory rentalHistory) {
+    public CustomerLoginInterface(JFrame mainInterface, CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         super("Customer Panel");
 
         cardPanel = new JPanel();
@@ -21,7 +22,7 @@ public class CustomerLoginInterface extends JFrame{
         cardPanel.setLayout(cardLayout);
 
         // CustomerPanel instance
-        CustomerLoginPanel customerPanel = new CustomerLoginPanel(carInventory, rentalHistory);
+        CustomerLoginPanel customerPanel = new CustomerLoginPanel(carInventory, rentalHistory, pricingAttributes);
 
         cardPanel.add(customerPanel, "Customer");
 

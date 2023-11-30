@@ -19,6 +19,7 @@ import carrental.models.Car;
 import carrental.models.Car.AdditionalFeatures;
 import carrental.models.Car.ComfortLevel;
 import carrental.models.CarInventory;
+import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 
 public class AdminMainWindow extends JFrame {
@@ -26,10 +27,12 @@ public class AdminMainWindow extends JFrame {
     private JPanel contentPanel;
     private CarInventory carInventory;
     private JTable carTable; 
+    private PricingAttributes pricingAttributes;
 
-    public AdminMainWindow(Administrator authenticatedUser, CarInventory carInventory, RentalHistory rentalHistory) {
+    public AdminMainWindow(Administrator authenticatedUser, CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         this.authenticatedUser = authenticatedUser;
         this.carInventory = carInventory;
+        this.pricingAttributes = pricingAttributes;
         initializeComponents(rentalHistory);
 
         // Add a WindowListener to handle window closing
@@ -87,13 +90,15 @@ public class AdminMainWindow extends JFrame {
 
         JButton carDatabaseButton = new JButton("Car Database");
         JButton rentalHistoryButton = new JButton("Rental History");
+        JButton pricesButton = new JButton("Service Prices");
         JButton logoutButton = new JButton("Log Out");
 
         // Add action listeners for navigation buttons
         carDatabaseButton.addActionListener(e -> showCarDatabaseView());
         rentalHistoryButton.addActionListener(e -> showRentalHistoryView(rentalHistory));
+        pricesButton.addActionListener(e -> showPricesPanelView());
         logoutButton.addActionListener(e -> {
-            new UserInterface(carInventory, rentalHistory);
+            new UserInterface(carInventory, rentalHistory, pricingAttributes);
             carInventory.serializeCarInventory("carInventory.ser");
             dispose();
         });
@@ -101,14 +106,15 @@ public class AdminMainWindow extends JFrame {
         // Add buttons to the side panel
         carDatabaseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         rentalHistoryButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        pricesButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         sidePanel.add(carDatabaseButton);
         sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
         sidePanel.add(rentalHistoryButton);
-
         sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
-
+        sidePanel.add(pricesButton);
+        sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
         sidePanel.add(logoutButton);
 
         return sidePanel;
@@ -504,11 +510,20 @@ public class AdminMainWindow extends JFrame {
         return new JTable(tableModel);
     }
 
-        private void showRentalHistoryView(RentalHistory rentalHistory) {
+    private void showRentalHistoryView(RentalHistory rentalHistory) {
         // Logic to switch to the rental history view
         contentPanel.removeAll();
         RentalHistorySearchPanel rentalHistoryPanel = new RentalHistorySearchPanel(rentalHistory);
         contentPanel.add(rentalHistoryPanel);
+        contentPanel.revalidate();
+        contentPanel.repaint();
+    }
+
+    private void showPricesPanelView() {
+        // Logic to switch to the price setter view
+        contentPanel.removeAll();
+        PriceSetterPanel priceSetterPanel = new PriceSetterPanel(pricingAttributes);
+        contentPanel.add(priceSetterPanel);
         contentPanel.revalidate();
         contentPanel.repaint();
     }

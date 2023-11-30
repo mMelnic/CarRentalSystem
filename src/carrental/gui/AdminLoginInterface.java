@@ -6,6 +6,7 @@ import java.awt.CardLayout;
 import javax.swing.*;
 
 import carrental.models.CarInventory;
+import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 
 public class AdminLoginInterface extends JFrame{
@@ -13,14 +14,14 @@ public class AdminLoginInterface extends JFrame{
     private CardLayout cardLayout;
     private JButton backButton;
 
-    public AdminLoginInterface(JFrame mainInterface, CarInventory inventory, RentalHistory rentalHistory) {
+    public AdminLoginInterface(JFrame mainInterface, CarInventory inventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         super("Administrator Panel");
 
         cardPanel = new JPanel();
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
 
-        AdminLoginPanel adminPanel = new AdminLoginPanel(inventory, rentalHistory);
+        AdminLoginPanel adminPanel = new AdminLoginPanel(inventory, rentalHistory, pricingAttributes);
 
         cardPanel.add(adminPanel, "Administrator");
 

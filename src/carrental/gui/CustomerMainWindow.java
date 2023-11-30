@@ -15,20 +15,24 @@ import java.util.Set;
 import carrental.models.Car;
 import carrental.models.CarInventory;
 import carrental.models.Customer;
+import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.models.RentalRecord;
+import carrental.util.PricingCalculation;
 
 public class CustomerMainWindow extends JFrame {
     private Customer customer;
     private CarInventory carInventory;
     private JPanel contentPanel;
     private JTable unrentedCarsTable;
-    RentalHistory customersRentalHistory;
+    private RentalHistory customersRentalHistory;
+    private PricingAttributes pricingAttributes;
 
-    public CustomerMainWindow(Customer customer, CarInventory carInventory, RentalHistory entireRentalHistory) {
+    public CustomerMainWindow(Customer customer, CarInventory carInventory, RentalHistory entireRentalHistory, PricingAttributes pricingAttributes) {
         this.customer = customer;
         this.carInventory = carInventory;
         customersRentalHistory = entireRentalHistory;
+        this.pricingAttributes = pricingAttributes;
         initializeComponents();
 
         // Add a WindowListener to handle window closing
@@ -95,7 +99,7 @@ public class CustomerMainWindow extends JFrame {
         reservationButton.addActionListener(e -> showReservationView());
         accountButton.addActionListener(e -> showAccountView());
         logoutButton.addActionListener(e -> {
-            new UserInterface(carInventory, customersRentalHistory);
+            new UserInterface(carInventory, customersRentalHistory, pricingAttributes);
             carInventory.serializeCarInventory("carInventory.ser");
             customersRentalHistory.saveToFile("rental_history.ser");
             dispose();
@@ -305,7 +309,7 @@ public class CustomerMainWindow extends JFrame {
     private DefaultTableModel createTableModelForUnrentedCars(CarInventory inventory) {
 
         // Assuming Car class has methods like getManufacturer(), getModel(), etc.
-        String[] columnNames = {"Manufacturer", "Model", "Registration Info", "Color", "Year of Production", "Price", "Comfort Level", "Additional Features"};
+        String[] columnNames = {"Manufacturer", "Model", "Registration Info", "Color", "Year of Production", "Price/day", "Comfort Level", "Additional Features"};
 
         // Assuming Car class has a method like getCarData() to retrieve an array of car data
         Object[][] data = new Object[inventory.getCarList().size()][columnNames.length];
@@ -343,7 +347,13 @@ public class CustomerMainWindow extends JFrame {
     
                 if (success) {
                     // Update the table with the new inventory
-                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, 1000, endDate);
+                    double durationBasedPrice = PricingCalculation.calculateDurationBasedPriceWithBase(
+                            selectedCar.getPrice(), startDate, endDate, pricingAttributes);
+                    double additionalServicesPrice = PricingCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
+                            pricingAttributes);
+                    double finalPrice = PricingCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
+                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, finalPrice, endDate);
+                    PricingCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
                     selectedCar.addRentalInterval(customerRecord.getRentId(), startDate, endDate);
                     customersRentalHistory.addRentalRecord(customerRecord);
                     updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
@@ -399,4 +409,6 @@ public class CustomerMainWindow extends JFrame {
         contentPanel.revalidate();
         contentPanel.repaint();
     }
+
+
 }
