@@ -44,6 +44,14 @@ public class RentalHistory implements Serializable {
         return numberOfReservationsMap.getOrDefault(customerUsername, 0);
     }
 
+    public void decreaseNumberOfReservations(String customerUsername) {
+        numberOfReservationsMap.merge(customerUsername, -1, Integer::sum);
+        // If the number becomes zero, remove the entry from the map
+        if (numberOfReservationsMap.get(customerUsername) <= 0) {
+            numberOfReservationsMap.remove(customerUsername);
+        }
+    }
+
     // Getters for the maps
 
     public Map<String, List<RentalRecord>> getCustomerRentalMap() {
@@ -88,6 +96,38 @@ public class RentalHistory implements Serializable {
         }
     
         return filteredHistory;
+    }
+
+    public void updateOriginalHistory(RentalHistory updatedHistory) {
+        for (Map.Entry<String, List<RentalRecord>> entry : updatedHistory.customerRentalMap.entrySet()) {
+            int countReservations = 0;
+            String customerUsername = entry.getKey();
+            List<RentalRecord> updatedRecords = entry.getValue();
+
+            // Remove existing records for the customer
+            customerRentalMap.remove(customerUsername);
+
+            // Add updated records to the original map
+            customerRentalMap.put(customerUsername, new ArrayList<>(updatedRecords));
+
+            for (RentalRecord rentalRecord : updatedRecords) {
+                if (!rentalRecord.getCancelled()) {
+                    countReservations++;
+                }
+            }
+
+            // Update the number of reservations
+            numberOfReservationsMap.put(customerUsername, countReservations);
+        }
+
+        // Update date-based map
+        dateRentalMap.clear();
+        for (Map.Entry<String, List<RentalRecord>> entry : customerRentalMap.entrySet()) {
+            for (RentalRecord myRecord : entry.getValue()) {
+                Date transactionDate = myRecord.getTransactionDate();
+                dateRentalMap.computeIfAbsent(transactionDate, k -> new ArrayList<>()).add(myRecord);
+            }
+        }
     }
     
 

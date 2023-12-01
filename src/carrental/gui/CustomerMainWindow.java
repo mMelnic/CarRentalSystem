@@ -416,8 +416,12 @@ public class CustomerMainWindow extends JFrame {
 
         // Create FutureReservationsPanel with the customer's rental records
         FutureReservationsPanel futureReservationsPanel = new FutureReservationsPanel(
-                currentCustomerHistory.getCustomerRentalMap().get(customer.getUsername()), customersRentalHistory, carInventory);
+                currentCustomerHistory.getCustomerRentalMap().get(customer.getUsername()), carInventory, customersRentalHistory, customer);
 
+        customersRentalHistory.updateOriginalHistory(currentCustomerHistory);
+        progressTracker.updateProgress(customer.getUsername(),
+                customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
+        //rentalHistoryPanel.updateTextArea(currentCustomerHistory);
         // Create a container panel with vertical BoxLayout
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));

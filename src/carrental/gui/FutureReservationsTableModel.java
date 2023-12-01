@@ -21,7 +21,7 @@ public class FutureReservationsTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return futureReservations.size();
+        return futureReservations == null ? 0 : futureReservations.size();
     }
 
     @Override
@@ -31,6 +31,10 @@ public class FutureReservationsTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
+        if (futureReservations == null || futureReservations.isEmpty()) {
+            return null;
+        }
+        
         RentalRecord myRecord = futureReservations.get(rowIndex);
         Car rentedCar = myRecord.getRentedCar();
         RentalInterval rentalInterval = rentedCar.getRentalIntervals().stream()

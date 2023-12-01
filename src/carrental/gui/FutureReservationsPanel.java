@@ -6,9 +6,11 @@ import com.toedter.calendar.JDateChooser;
 
 import carrental.models.Car;
 import carrental.models.CarInventory;
+import carrental.models.Customer;
 import carrental.models.RentalHistory;
 import carrental.models.RentalInterval;
 import carrental.models.RentalRecord;
+import carrental.util.CustomerProgressTracker;
 
 import java.awt.*;
 import java.time.LocalDate;
@@ -19,11 +21,11 @@ import java.util.UUID;
 
 public class FutureReservationsPanel extends JPanel {
     private JTable futureReservationsTable;
-
     private JButton modifyButton;
     private JButton cancelButton;
 
-    public FutureReservationsPanel(List<RentalRecord> rentalRecords, RentalHistory rentalHistory, CarInventory carInventory) {
+    public FutureReservationsPanel(List<RentalRecord> rentalRecords, CarInventory carInventory, RentalHistory rentalHistory, Customer customer) {
+        setPreferredSize(new Dimension(300, 200));
         initializeTable(rentalRecords);
 
         // Initialize buttons
@@ -31,9 +33,9 @@ public class FutureReservationsPanel extends JPanel {
         cancelButton = new JButton("Cancel");
 
         // Add action listeners to the buttons
-        modifyButton.addActionListener(e -> modifyReservation(carInventory, rentalHistory));
+        modifyButton.addActionListener(e -> modifyReservation(carInventory));
 
-        cancelButton.addActionListener(e -> cancelReservation(carInventory, rentalHistory));
+        cancelButton.addActionListener(e -> cancelReservation(carInventory, rentalHistory, customer));
 
         // Create a panel for the buttons
         JPanel buttonPanel = new JPanel();
@@ -76,14 +78,18 @@ public class FutureReservationsPanel extends JPanel {
                 .toList();
     }
 
-    private void modifyReservation(CarInventory carInventory, RentalHistory rentalHistory) {
+    private void modifyReservation(CarInventory carInventory) {
         //TODO recalculate price when modifying the dates
         int selectedRow = futureReservationsTable.getSelectedRow();
+        int registrationInfoColumnIndex = 2;
 
         if (selectedRow >= 0) {
             // Get the selected rental record from the table model
             RentalRecord selectedRecord = ((FutureReservationsTableModel) futureReservationsTable.getModel())
                     .getRentalRecord(selectedRow);
+
+            // Get the registration info of the selected car from the table model
+            String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
 
             // Check if modification is allowed
             if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
@@ -93,15 +99,16 @@ public class FutureReservationsPanel extends JPanel {
                 if (newDateRange != null) {
                     Date newStartDate = newDateRange[0];
                     Date newEndDate = newDateRange[1];
+                    Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+                    Car rentedCarInTable = selectedRecord.getRentedCar();
 
                     // Modify the reservation
-                    if (selectedRecord.getRentedCar().modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate)) {
+                    if (selectedCar.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate)) {
                         // Update the table with the new reservation data
+                        rentedCarInTable.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate);
                         ((FutureReservationsTableModel) futureReservationsTable.getModel()).fireTableDataChanged();
                         JOptionPane.showMessageDialog(this, "Reservation modified successfully", "Success",
                                 JOptionPane.INFORMATION_MESSAGE);
-                        carInventory.serializeCarInventory("carInventory.ser");
-                        rentalHistory.saveToFile("rental_history.ser");
                     } else {
                         JOptionPane.showMessageDialog(this, "Modification failed. Please check the selected dates.",
                                 "Modification Failed", JOptionPane.WARNING_MESSAGE);
@@ -119,25 +126,28 @@ public class FutureReservationsPanel extends JPanel {
 
     // Implement the cancelReservation method (you can adapt this based on your
     // requirements)
-    private void cancelReservation(CarInventory carInventory, RentalHistory rentalHistory) {
+    private void cancelReservation(CarInventory carInventory, RentalHistory rentalHistory, Customer customer) {
         //TODO decrease the number of reservations/rental records and upgrade progress bar, downgrade tier if necessary
         int selectedRow = futureReservationsTable.getSelectedRow();
+        int registrationInfoColumnIndex = 2;
 
         if (selectedRow >= 0) {
             FutureReservationsTableModel model = (FutureReservationsTableModel) futureReservationsTable.getModel();
             RentalRecord selectedRecord = model.getRentalRecord(selectedRow);
+            String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
 
             if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
-                Car rentedCar = selectedRecord.getRentedCar();
+                Car rentedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
                 UUID rentId = selectedRecord.getRentId();
 
                 // Remove the rental interval from the rentedCar
                 rentedCar.removeRentalInterval(rentId);
+                selectedRecord.getRentedCar().removeRentalInterval(rentId);
 
                 // Set isCancelled attribute to true in the RentalRecord
                 selectedRecord.setCancelled(true);
-                carInventory.serializeCarInventory("carInventory.ser");
-                rentalHistory.saveToFile("rental_history.ser");
+
+                rentalHistory.decreaseNumberOfReservations(customer.getUsername());
 
                 // Repaint the table to reflect the changes
                 model.fireTableDataChanged();
