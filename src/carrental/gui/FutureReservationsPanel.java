@@ -1,16 +1,19 @@
 package carrental.gui;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 
 import com.toedter.calendar.JDateChooser;
 
 import carrental.models.Car;
 import carrental.models.CarInventory;
 import carrental.models.Customer;
+import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.models.RentalInterval;
 import carrental.models.RentalRecord;
 import carrental.util.CustomerModificationListener;
+import carrental.util.PriceUpdateListener;
 
 import java.awt.*;
 import java.time.LocalDate;
@@ -26,8 +29,9 @@ public class FutureReservationsPanel extends JPanel {
     private JButton cancelButton;
     private Customer customer;
     private transient CustomerModificationListener customerModificationListener;
+    private transient PriceUpdateListener priceUpdateListener;
 
-    public FutureReservationsPanel(List<RentalRecord> rentalRecords, CarInventory carInventory, RentalHistory rentalHistory, Customer customer) {
+    public FutureReservationsPanel(List<RentalRecord> rentalRecords, CarInventory carInventory, RentalHistory rentalHistory, Customer customer, PricingAttributes charges) {
         this.customer = customer;
         setPreferredSize(new Dimension(300, 200));
         initializeTable(rentalRecords);
@@ -37,9 +41,9 @@ public class FutureReservationsPanel extends JPanel {
         cancelButton = new JButton("Cancel");
 
         // Add action listeners to the buttons
-        modifyButton.addActionListener(e -> modifyReservation(carInventory));
+        modifyButton.addActionListener(e -> modifyReservation(carInventory, customer, charges, rentalRecords));
 
-        cancelButton.addActionListener(e -> cancelReservation(carInventory, rentalHistory));
+        cancelButton.addActionListener(e -> cancelReservation(carInventory, rentalHistory, rentalRecords));
 
         // Create a panel for the buttons
         JPanel buttonPanel = new JPanel();
@@ -47,7 +51,15 @@ public class FutureReservationsPanel extends JPanel {
         buttonPanel.add(cancelButton);
 
         setLayout(new BorderLayout());
-        add(new JScrollPane(futureReservationsTable), BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(futureReservationsTable);
+        TitledBorder titledBorder = BorderFactory.createTitledBorder("Future Reservations");
+        Font futureReservationsTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
+        titledBorder.setTitleFont(futureReservationsTitleFont);
+
+        scrollPane.setBorder(titledBorder);
+
+        // Add the scroll pane to the panel
+        add(scrollPane, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
@@ -57,6 +69,10 @@ public class FutureReservationsPanel extends JPanel {
     
     public void setCustomerModificationListener(CustomerModificationListener listener) {
         this.customerModificationListener = listener;
+    }
+
+    public void setPriceUpdateListener(PriceUpdateListener priceUpdateListener) {
+        this.priceUpdateListener = priceUpdateListener;
     }
 
     private void initializeTable(List<RentalRecord> rentalRecords) {
@@ -69,6 +85,11 @@ public class FutureReservationsPanel extends JPanel {
         // Create JTable with the populated model
         futureReservationsTable = new JTable(tableModel);
         futureReservationsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    }
+
+    private void updateFutureReservationsTable(List<RentalRecord> reservations) {
+        // Update the table model with the new rental history
+        futureReservationsTable.setModel(new FutureReservationsTableModel(reservations));
     }
 
     private List<RentalRecord> filterFutureReservations(List<RentalRecord> rentalRecords) {
@@ -93,8 +114,7 @@ public class FutureReservationsPanel extends JPanel {
                 .toList();
     }
 
-    private void modifyReservation(CarInventory carInventory) {
-        //TODO recalculate price when modifying the dates
+    private void modifyReservation(CarInventory carInventory, Customer customer, PricingAttributes charges, List<RentalRecord> rentalRecords) {
         int selectedRow = futureReservationsTable.getSelectedRow();
         int registrationInfoColumnIndex = 2;
 
@@ -121,11 +141,17 @@ public class FutureReservationsPanel extends JPanel {
                     if (selectedCar.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate)) {
                         // Update the table with the new reservation data
                         rentedCarInTable.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate);
-                        ((FutureReservationsTableModel) futureReservationsTable.getModel()).fireTableDataChanged();
-                        JOptionPane.showMessageDialog(this, "Reservation modified successfully", "Success",
-                                JOptionPane.INFORMATION_MESSAGE);
+                        double newPrice = customer.calculateRentalPrice(selectedCar, newStartDate, newEndDate, charges);
+                        selectedRecord.setTotalPrice(newPrice);
+                        if (priceUpdateListener != null) {
+                            priceUpdateListener.onPriceUpdate();                            
+                        }
+                        updateFutureReservationsTable(filterFutureReservations(rentalRecords));
+                        SwingUtilities.invokeLater(() ->
+                        JOptionPane.showMessageDialog(this, "Reservation modified successfully", "Success", JOptionPane.INFORMATION_MESSAGE));
+
                     } else {
-                        JOptionPane.showMessageDialog(this, "Modification failed. Please check the selected dates.",
+                        JOptionPane.showMessageDialog(this, "Modification failed. The selected dates are not available.",
                                 "Modification Failed", JOptionPane.WARNING_MESSAGE);
                     }
                 }
@@ -139,14 +165,16 @@ public class FutureReservationsPanel extends JPanel {
         }
     }
 
-    private void cancelReservation(CarInventory carInventory, RentalHistory rentalHistory) {
+    private void cancelReservation(CarInventory carInventory, RentalHistory rentalHistory,
+            List<RentalRecord> rentalRecords) {
         int selectedRow = futureReservationsTable.getSelectedRow();
         int registrationInfoColumnIndex = 2;
 
         if (selectedRow >= 0) {
             FutureReservationsTableModel model = (FutureReservationsTableModel) futureReservationsTable.getModel();
             RentalRecord selectedRecord = model.getRentalRecord(selectedRow);
-            String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
+            String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow,
+                    registrationInfoColumnIndex);
 
             if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
                 Car rentedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
@@ -160,14 +188,24 @@ public class FutureReservationsPanel extends JPanel {
                 selectedRecord.setCancelled(true);
 
                 rentalHistory.decreaseNumberOfReservations(customer.getUsername());
-                Customer downgradedCustomer = customer.checkAndDowngrade(rentalHistory);
-                this.customer = downgradedCustomer;
+                this.customer = customer.checkAndDowngrade(rentalHistory);
+
                 if (customerModificationListener != null) {
                     customerModificationListener.onCustomerModified(customer);
                 }
+
                 // Repaint the table to reflect the changes
-                model.fireTableDataChanged();
+                updateFutureReservationsTable(filterFutureReservations(rentalRecords));
+
+                JOptionPane.showMessageDialog(this, "Reservation cancelled successfully", "Success",
+                        JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Cancellation not allowed for the selected reservation.",
+                        "Cancellation Not Allowed", JOptionPane.WARNING_MESSAGE);
             }
+        } else {
+            JOptionPane.showMessageDialog(this, "Please select a reservation to cancel.", "No Reservation Selected",
+                    JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -175,6 +213,8 @@ public class FutureReservationsPanel extends JPanel {
     public Date[] showDateSelectionDialog(Component parentComponent) {
         JDateChooser startDateChooser = createDatePicker("Select Start Date:");
         JDateChooser endDateChooser = createDatePicker("Select End Date:");
+        startDateChooser.addPropertyChangeListener("date",
+                e -> endDateChooser.setMinSelectableDate(startDateChooser.getDate()));
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.add(startDateChooser);

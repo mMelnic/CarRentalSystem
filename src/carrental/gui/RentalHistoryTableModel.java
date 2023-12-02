@@ -14,7 +14,7 @@ import java.util.List;
 public class RentalHistoryTableModel extends AbstractTableModel {
 
     private RentalHistory rentalHistory;
-    private String[] columnNames = {"Customer Name", "Email", "Registration Number", "Car Details", "Total Price", "Rental Date"};
+    private String[] columnNames = {"Customer Name", "Email", "Registration Number", "Car Details", "Total Price", "Rental Date", "Cancelled"};
 
     public RentalHistoryTableModel(RentalHistory rentalHistory) {
         this.rentalHistory = rentalHistory;
@@ -56,6 +56,8 @@ public class RentalHistoryTableModel extends AbstractTableModel {
                 return rentalRecord.getTotalPrice();
             case 5:
                 return formatDate(rentalRecord.getTransactionDate());
+            case 6:
+                return rentalRecord.getCancelled() ? "Yes" : "No";
             default:
                 return null;
         }

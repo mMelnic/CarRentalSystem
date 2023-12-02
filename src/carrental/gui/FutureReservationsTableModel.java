@@ -37,10 +37,7 @@ public class FutureReservationsTableModel extends AbstractTableModel {
         
         RentalRecord myRecord = futureReservations.get(rowIndex);
         Car rentedCar = myRecord.getRentedCar();
-        RentalInterval rentalInterval = rentedCar.getRentalIntervals().stream()
-                .filter(interval -> interval.getRentId().equals(myRecord.getRentId()))
-                .findFirst()
-                .orElse(null);
+        RentalInterval rentalInterval = rentedCar.getRentalIntervalById(myRecord.getRentId());
 
         if (rentalInterval != null) {
             LocalDate startDate = rentalInterval.getStartDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();

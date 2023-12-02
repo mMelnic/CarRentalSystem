@@ -16,7 +16,7 @@ public class PriceWindow extends JFrame {
     public PriceWindow(double basePrice, double durationBasedPrice, double additionalServicesPrice, double finalPrice, Set<AdditionalFeatures> additionalFeatures, PricingAttributes pricingAttributes) {
         setTitle("Receipt");
         setSize(400, 300);
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         // Create a panel with a vertical layout
         JPanel panel = new JPanel(new BorderLayout());
@@ -53,6 +53,7 @@ public class PriceWindow extends JFrame {
         getContentPane().add(panel);
         setLocationRelativeTo(null); // Center the window
         setVisible(true);
+        toFront();
     }
 
     private void addLabel(JPanel panel, String text) {

@@ -1,6 +1,7 @@
 package carrental.gui;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 
@@ -59,6 +60,7 @@ public class AdminMainWindow extends JFrame {
 
         // Initialize the content panel
         contentPanel = new JPanel(new BorderLayout());
+        contentPanel.setBorder(new EmptyBorder(20, 10, 10, 10));
 
         // Show the car database view by default
         showCarDatabaseView();
@@ -77,7 +79,7 @@ public class AdminMainWindow extends JFrame {
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK), // Left border
-                BorderFactory.createEmptyBorder(15, 5, 10, 5) // Empty border (top, left, bottom, right)
+                BorderFactory.createEmptyBorder(50, 10, 0, 10) // Empty border (top, left, bottom, right)
         ));
 
         // Add title
@@ -261,8 +263,10 @@ public class AdminMainWindow extends JFrame {
         String model = ((JTextField) fieldsPanel.getComponent(3)).getText();
         String registrationInfo = ((JTextField) fieldsPanel.getComponent(5)).getText();
         String color = ((JTextField) fieldsPanel.getComponent(7)).getText();
-        int yearOfProduction = Integer.parseInt(((JTextField) fieldsPanel.getComponent(9)).getText());
-        double price = Double.parseDouble(((JTextField) fieldsPanel.getComponent(11)).getText());
+
+        JTextField yearField = (JTextField) fieldsPanel.getComponent(9);
+        JTextField priceField = (JTextField) fieldsPanel.getComponent(11);
+
         ComfortLevel comfortLevel = (ComfortLevel) ((JComboBox<?>) fieldsPanel.getComponent(13)).getSelectedItem();
 
         // Extract selected additional features
@@ -276,14 +280,33 @@ public class AdminMainWindow extends JFrame {
             }
         }
 
-        // Create a new car
-        Car newCar = new Car(manufacturer, model, registrationInfo, color, yearOfProduction, price, comfortLevel, additionalFeatures);
+        // Validate the required fields
+        if (manufacturer.isEmpty() || model.isEmpty() || registrationInfo.isEmpty() || color.isEmpty()
+                || yearField.getText().isEmpty() || priceField.getText().isEmpty()) {
+            // Show a warning message dialog if any of the required fields is not filled
+            JOptionPane.showMessageDialog(fieldsPanel, "Please fill in all required fields.", "Missing Information",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
-        // Add the new car to the CarInventory
-        authenticatedUser.addCar(newCar, carInventory);
+        try {
+            int yearOfProduction = Integer.parseInt(yearField.getText());
+            double price = Double.parseDouble(priceField.getText());
 
-        // Update the displayed table
-        updateCarTable();
+            // Create a new car
+            Car newCar = new Car(manufacturer, model, registrationInfo, color, yearOfProduction, price, comfortLevel,
+                    additionalFeatures);
+
+            // Add the new car to the CarInventory
+            authenticatedUser.addCar(newCar, carInventory);
+
+            // Update the displayed table
+            updateCarTable();
+        } catch (NumberFormatException e) {
+            // Handle the case where the entered year or price is not a valid number
+            JOptionPane.showMessageDialog(fieldsPanel, "Please enter valid numeric values for year and price.",
+                    "Invalid Input", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private JTable createCarTable(List<Car> carList) {
@@ -339,11 +362,12 @@ public class AdminMainWindow extends JFrame {
     }
     
     private void displayCarDetailsForEditing(Car car) {
-        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     
         JTextField manufacturerField = new JTextField(car.getManufacturer());
         JTextField modelField = new JTextField(car.getModel());
         JTextField registrationInfoField = new JTextField(car.getRegistrationInfo());
+        registrationInfoField.setEditable(false);
         JTextField colorField = new JTextField(car.getColor());
         JTextField yearOfProductionField = new JTextField(String.valueOf(car.getYearOfProduction()));
         JTextField priceField = new JTextField(String.valueOf(car.getPrice()));
@@ -382,15 +406,23 @@ public class AdminMainWindow extends JFrame {
         // Add a "Delete" button
         JButton deleteButton = new JButton("Delete");
         deleteButton.addActionListener(e -> {
-            int confirm = JOptionPane.showConfirmDialog(contentPanel, "Are you sure you want to delete this car?", "Confirm Deletion", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                // Delete the car from the table and the inventory
-                deleteCar(car);
-                // Close the edit window
-                Window window = SwingUtilities.getWindowAncestor(deleteButton);
-                if (window != null) {
-                    window.dispose();
+            // Check if the car can be deleted
+            if (car.canCarBeDeleted()) {
+                int confirm = JOptionPane.showConfirmDialog(contentPanel, "Are you sure you want to delete this car?",
+                        "Confirm Deletion", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    // Delete the car from the table and the inventory
+                    deleteCar(car);
+                    // Close the edit window
+                    Window window = SwingUtilities.getWindowAncestor(deleteButton);
+                    if (window != null) {
+                        window.dispose();
+                    }
                 }
+            } else {
+                JOptionPane.showMessageDialog(contentPanel,
+                        "The car cannot be deleted because it has active rental intervals.", "Cannot Delete Car",
+                        JOptionPane.WARNING_MESSAGE);
             }
         });
 
@@ -408,6 +440,15 @@ public class AdminMainWindow extends JFrame {
         int result = JOptionPane.showConfirmDialog(contentPanel, editPanel, "Edit Car Details", JOptionPane.OK_CANCEL_OPTION);
         
         if (result == JOptionPane.OK_OPTION) {
+            if (manufacturerField.getText().isEmpty() || modelField.getText().isEmpty()
+                    || registrationInfoField.getText().isEmpty() || colorField.getText().isEmpty()
+                    || yearOfProductionField.getText().isEmpty() || priceField.getText().isEmpty()) {
+                // Show a warning message dialog if any of the required fields is not filled
+                JOptionPane.showMessageDialog(this, "Please fill in all required fields.", "Missing Information",
+                        JOptionPane.WARNING_MESSAGE);
+                return; // Prevent the update if any required field is empty
+            }
+
             // Update the car object with the modified data
             car.setManufacturer(manufacturerField.getText());
             car.setModel(modelField.getText());

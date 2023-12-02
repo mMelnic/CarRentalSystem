@@ -116,6 +116,30 @@ public class Car implements Serializable{
     public void setAdditionalFeatures(Set<AdditionalFeatures> additionalFeatures) {
         this.additionalFeatures = additionalFeatures;
     }
+    
+    public List<RentalInterval> getRentalIntervals() {
+        return rentalIntervals;
+    }
+
+    public void setRentalIntervals(List<RentalInterval> rentalIntervals) {
+        this.rentalIntervals = rentalIntervals;
+    }
+
+    public void addRentalInterval(UUID rentId, Date startDate, Date endDate) {
+        RentalInterval interval = new RentalInterval(rentId, startDate, endDate);
+        rentalIntervals.add(interval);
+    }
+
+    public RentalInterval getRentalIntervalById(UUID rentId) {
+        return rentalIntervals.stream()
+                .filter(interval -> interval.getRentId().equals(rentId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public boolean canCarBeDeleted() {
+        return rentalIntervals.isEmpty();
+    }
 
     public Object[] getCarData() {
         Object[] carData = new Object[8]; // Adjust the size based on the number of attributes
@@ -145,11 +169,6 @@ public class Car implements Serializable{
         return featuresString.toString();
     }
 
-    public void addRentalInterval(UUID rentId, Date startDate, Date endDate) {
-        RentalInterval interval = new RentalInterval(rentId, startDate, endDate);
-        rentalIntervals.add(interval);
-    }
-
     // Method to check if a given interval overlaps with any existing intervals
     public boolean hasOverlap(Date newStartDate, Date newEndDate) {
         for (RentalInterval interval : rentalIntervals) {
@@ -170,21 +189,23 @@ public class Car implements Serializable{
         return !localEnd1.isBefore(localStart2) && !localStart1.isAfter(localEnd2);
     }
 
+    private boolean hasOverlap(UUID rentId, Date newStartDate, Date newEndDate) {
+        // Check for overlaps, ignoring the interval with the same rentId
+        for (RentalInterval interval : rentalIntervals) {
+            if (!interval.getRentId().equals(rentId) && isOverlap(interval.getStartDate(), interval.getEndDate(), newStartDate, newEndDate)) {
+                return true; // Overlap found
+            }
+        }
+        return false; // No overlap found
+    }
+
     private LocalDate dateToLocalDate(Date date) {
         return date.toInstant().atZone(Calendar.getInstance().getTimeZone().toZoneId()).toLocalDate();
     }
 
-    public List<RentalInterval> getRentalIntervals() {
-        return rentalIntervals;
-    }
-
-    public void setRentalIntervals(List<RentalInterval> rentalIntervals) {
-        this.rentalIntervals = rentalIntervals;
-    }
-
     public boolean modifyReservation(UUID rentId, Date newStartDate, Date newEndDate) {
         // Check if the modification is allowed
-        if (!hasOverlap(newStartDate, newEndDate)) {
+        if (!hasOverlap(rentId, newStartDate, newEndDate)) {
             // Remove the existing rental interval with the given rentId
             rentalIntervals.removeIf(interval -> interval.getRentId().equals(rentId));
 
@@ -199,10 +220,7 @@ public class Car implements Serializable{
     
     public boolean isModificationAllowed(UUID rentId) {
         // Find the existing rental interval with the given rentID
-        RentalInterval existingInterval = rentalIntervals.stream()
-                .filter(interval -> interval.getRentId().equals(rentId))
-                .findFirst()
-                .orElse(null);
+        RentalInterval existingInterval = getRentalIntervalById(rentId);
 
         // Check if the existing start date is more than 5 days in the future
         if (existingInterval != null) {

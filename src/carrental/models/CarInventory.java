@@ -125,8 +125,6 @@ public class CarInventory implements Serializable {
 
     public CarInventory searchWithMultipleCriteria(String manufacturer, String model, Car.ComfortLevel comfortLevel,
             Set<Car.AdditionalFeatures> features, Date startDate, Date endDate) {
-        LocalDate localStartDate = dateToLocalDate(startDate);
-        LocalDate localEndDate = dateToLocalDate(endDate);
 
         CarInventory filteredCarsInventory = new CarInventory();
 
@@ -135,17 +133,24 @@ public class CarInventory implements Serializable {
                         && (model == null || model.isEmpty() || car.getModel().equalsIgnoreCase(model))
                         && (comfortLevel == null || car.getComfortLevel() == comfortLevel)
                         && (features == null || features.isEmpty() || car.getAdditionalFeatures().containsAll(features))
-                        && !isCarRentedInInterval(car, localStartDate, localEndDate))
+                        && !isCarRentedInInterval(car, startDate, endDate))
                 .forEach(filteredCarsInventory::addCar);
 
         return filteredCarsInventory;
     }
-    private boolean isCarRentedInInterval(Car car, LocalDate startDate, LocalDate endDate) {
+    private boolean isCarRentedInInterval(Car car, Date startDate, Date endDate) {
+        if (startDate == null || endDate == null) {
+            return false; // If either startDate or endDate is null, the car is not rented within the specified interval
+        }
+
+        LocalDate localStartDate = dateToLocalDate(startDate);
+        LocalDate localEndDate = dateToLocalDate(endDate);
+
         for (RentalInterval interval : car.getRentalIntervals()) {
             LocalDate intervalStartDate = interval.getStartDate().toInstant().atZone(Calendar.getInstance().getTimeZone().toZoneId()).toLocalDate();
             LocalDate intervalEndDate = interval.getEndDate().toInstant().atZone(Calendar.getInstance().getTimeZone().toZoneId()).toLocalDate();
 
-            if (!endDate.isBefore(intervalStartDate) && !startDate.isAfter(intervalEndDate)) {
+            if (!localEndDate.isBefore(intervalStartDate) && !localStartDate.isAfter(intervalEndDate)) {
                 return true; // Car is rented within the specified interval
             }
         }

@@ -1,6 +1,7 @@
 package carrental.gui;
 
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -20,8 +21,9 @@ import carrental.models.RentalHistory;
 import carrental.models.RentalRecord;
 import carrental.util.CustomerModificationListener;
 import carrental.util.CustomerProgressTracker;
+import carrental.util.PriceUpdateListener;
 
-public class CustomerMainWindow extends JFrame implements CustomerModificationListener{
+public class CustomerMainWindow extends JFrame implements CustomerModificationListener, PriceUpdateListener {
     private Customer customer;
     private CarInventory carInventory;
     private JPanel contentPanel;
@@ -87,7 +89,7 @@ public class CustomerMainWindow extends JFrame implements CustomerModificationLi
         sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
         sidePanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK), // Left border
-            BorderFactory.createEmptyBorder(15, 5, 10, 5) // Empty border (top, left, bottom, right)
+            BorderFactory.createEmptyBorder(35, 5, 0, 5) // Empty border (top, left, bottom, right)
         ));
 
         // Add title
@@ -139,6 +141,13 @@ public class CustomerMainWindow extends JFrame implements CustomerModificationLi
     
         // Create table and scroll pane
         JScrollPane tableScrollPane = createTableScrollPane();
+        // Create a titled border
+        TitledBorder titledBorder = BorderFactory.createTitledBorder("Available Cars per Today");
+        Font availableCarsTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
+        titledBorder.setTitleFont(availableCarsTitleFont);
+
+        // Set the titled border to the scroll pane
+        tableScrollPane.setBorder(titledBorder);
 
         // Create a Rent button
         JButton rentButton = new JButton("Rent Selected Car");
@@ -274,8 +283,6 @@ public class CustomerMainWindow extends JFrame implements CustomerModificationLi
         // Create a JTable with the table model
         unrentedCarsTable = new JTable(tableModel);
         adjustColumnSizes(unrentedCarsTable);
-        // Set the auto-resize mode to adjust columns based on content
-        unrentedCarsTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS); //TODO check if it works in the createTableModel and updataTable model instead of adjustColumnSizes
         // Set the selection mode to allow single-row selection
         unrentedCarsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     
@@ -411,9 +418,10 @@ public class CustomerMainWindow extends JFrame implements CustomerModificationLi
         // Create FutureReservationsPanel with the customer's rental records
         
         FutureReservationsPanel futureReservationsPanel = new FutureReservationsPanel(
-                currentCustomerHistory.getCustomerRentalMap().get(customer.getUsername()), carInventory, customersRentalHistory, customer);
+                currentCustomerHistory.getCustomerRentalMap().get(customer.getUsername()), carInventory, customersRentalHistory, customer, pricingAttributes);
 
         futureReservationsPanel.setCustomerModificationListener(this);
+        futureReservationsPanel.setPriceUpdateListener(this);
 
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
@@ -440,6 +448,11 @@ public class CustomerMainWindow extends JFrame implements CustomerModificationLi
                 customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
         progressBarPanel.setNumberOfReservations(customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
         progressBarPanel.updateProgressBar();
+        rentalHistoryPanel.updateTextArea(currentCustomerHistory);
+    }
+
+    @Override
+    public void onPriceUpdate() {
         rentalHistoryPanel.updateTextArea(currentCustomerHistory);
     }
 

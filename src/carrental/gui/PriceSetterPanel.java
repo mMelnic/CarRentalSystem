@@ -30,7 +30,7 @@ public class PriceSetterPanel extends JPanel {
         this.pricingAttributes = pricingAttributes;
 
         setLayout(new GridLayout(12, 1));
-        setBorder(new EmptyBorder(50, 60, 300, 150));
+        setBorder(new EmptyBorder(30, 50, 290, 140));
 
         add(new JLabel("Weekly Discount Rate:"));
         weeklyDiscountRateField = new JTextField();
