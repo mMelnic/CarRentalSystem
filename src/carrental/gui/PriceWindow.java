@@ -24,18 +24,18 @@ public class PriceWindow extends JFrame {
         invoicePanel.setLayout(new BoxLayout(invoicePanel, BoxLayout.Y_AXIS));
 
         // Add components to the invoice panel
-        addLabel(invoicePanel, "Base Price: " + formatPrice(basePrice) + "Ft/day");
-        addLabel(invoicePanel, "Duration Based Price: " + formatPrice(durationBasedPrice) + "Ft");
+        addLabel(invoicePanel, "Base Price: " + formatPrice(basePrice) + " Ft/day");
+        addLabel(invoicePanel, "Duration Based Price: " + formatPrice(durationBasedPrice) + " Ft");
 
         if (additionalServicesPrice > 0) {
             addLabel(invoicePanel, "Additional Services Breakdown:");
             addAdditionalServicesLabels(invoicePanel, additionalFeatures, pricingAttributes);
             addLabel(invoicePanel, "-------------------------------");
-            addLabel(invoicePanel, "Additional Services Price: " + formatPrice(additionalServicesPrice) + "Ft");
+            addLabel(invoicePanel, "Additional Services Price: " + formatPrice(additionalServicesPrice) + " Ft");
         }
 
         addLabel(invoicePanel, "-------------------------------");
-        addLabel(invoicePanel, "Total Price: " + formatPrice(finalPrice) + "Ft");
+        addLabel(invoicePanel, "Total Price: " + formatPrice(finalPrice) + " Ft");
 
         // Add the invoice panel to the main panel
         panel.add(invoicePanel, BorderLayout.CENTER);
@@ -64,7 +64,7 @@ public class PriceWindow extends JFrame {
     private void addAdditionalServicesLabels(JPanel panel, Set<AdditionalFeatures> additionalFeatures, PricingAttributes pricingAttributes) {
         for (AdditionalFeatures feature : additionalFeatures) {
             double serviceCharge = getServiceCharge(feature, pricingAttributes);
-            addLabel(panel, feature + ": " + formatPrice(serviceCharge) + "Ft");
+            addLabel(panel, feature + ": " + formatPrice(serviceCharge) + " Ft");
         }
     }
 

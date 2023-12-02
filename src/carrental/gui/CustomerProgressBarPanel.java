@@ -9,7 +9,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class CustomerProgressBarPanel extends JPanel {
-    private CustomerProgressTracker progressTracker;
+    private transient CustomerProgressTracker progressTracker;
     private String customerUsername;
     private int numberOfReservations;
 
@@ -25,6 +25,10 @@ public class CustomerProgressBarPanel extends JPanel {
         startAutoUpdate(); // Optionally start a timer for automatic progress updates
     }
 
+    public void setNumberOfReservations(int numberOfReservations) {
+        this.numberOfReservations = numberOfReservations;
+    }
+
     private void initializeComponents() {
         setLayout(new BorderLayout());
 
@@ -35,7 +39,7 @@ public class CustomerProgressBarPanel extends JPanel {
         add(progressBar, BorderLayout.CENTER);
     }
 
-    private void updateProgressBar() {
+    void updateProgressBar() {
         int progress = progressTracker.getProgress(customerUsername);
         progressBar.setValue(progress);
 

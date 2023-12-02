@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "CarRentalApp",
+            "request": "launch",
+            "mainClass": "carrental.CarRentalApp",
+            "projectName": "CarRentalSystem_ad01884"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"

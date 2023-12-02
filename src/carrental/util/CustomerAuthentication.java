@@ -71,7 +71,7 @@ public class CustomerAuthentication {
         }
     }
     
-    public static void upgradeCustomerToBronze(String username) {
+    public static Customer upgradeCustomerToBronze(String username) {
         Customer customer = customerDatabase.get(username);
 
         if (customer != null && !(customer instanceof BronzeCustomer)) {
@@ -80,10 +80,13 @@ public class CustomerAuthentication {
             );
             updateUser(username, bronzeCustomer);
             System.out.println("Bronze update");
+
+            return bronzeCustomer;
         }
+        return customer;
     }
 
-    public static void upgradeCustomerToSilver(String username) {
+    public static Customer upgradeCustomerToSilver(String username) {
         Customer customer = customerDatabase.get(username);
 
         if (customer != null && !(customer instanceof SilverCustomer)) {
@@ -91,10 +94,15 @@ public class CustomerAuthentication {
                 customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
             );
             updateUser(username, silverCustomer);
+            System.out.println("Silver update");
+
+            return silverCustomer;
         }
+
+        return customer;
     }
 
-    public static void upgradeCustomerToGold(String username) {
+    public static Customer upgradeCustomerToGold(String username) {
         Customer customer = customerDatabase.get(username);
 
         if (customer != null && !(customer instanceof GoldCustomer)) {
@@ -102,6 +110,53 @@ public class CustomerAuthentication {
                 customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
             );
             updateUser(username, goldCustomer);
+            System.out.println("Gold update");
+
+            return goldCustomer;
         }
+
+        return customer;
     }
+
+    public static Customer downgradeGoldToSilver(String username) {
+        Customer customer = customerDatabase.get(username);
+
+        if (customer instanceof GoldCustomer) {
+            SilverCustomer silverCustomer = new SilverCustomer(
+                    customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail());
+            updateUser(username, silverCustomer);
+            System.out.println("Downgrade Gold to Silver");
+            return silverCustomer;
+        }
+
+        return customer;
+    }
+
+    public static Customer downgradeSilverToBronze(String username) {
+        Customer customer = customerDatabase.get(username);
+
+        if (customer instanceof SilverCustomer) {
+            BronzeCustomer bronzeCustomer = new BronzeCustomer(
+                    customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail());
+            updateUser(username, bronzeCustomer);
+            System.out.println("Downgrade Silver to Bronze");
+            return bronzeCustomer;
+        }
+
+        return customer;
+    }
+
+    public static Customer downgradeBronzeToRegular(String username) {
+        Customer customer = customerDatabase.get(username);
+
+        if (customer instanceof BronzeCustomer) {
+            Customer regularCustomer = new Customer(
+                    customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail());
+            updateUser(username, regularCustomer);
+            System.out.println("Downgrade Bronze to Regular");
+            return regularCustomer;
+        }
+        return customer;
+    }
+
 }

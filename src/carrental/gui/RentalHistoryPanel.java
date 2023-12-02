@@ -62,4 +62,8 @@ public class RentalHistoryPanel extends JPanel {
         }
     }
 
+    public void updateTextArea(RentalHistory rentalHistory) {
+        textArea.setText("");
+        printRentalHistoryForOneCustomer(rentalHistory);
+    }
 }

@@ -18,17 +18,20 @@ import carrental.models.Customer;
 import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.models.RentalRecord;
+import carrental.util.CustomerModificationListener;
 import carrental.util.CustomerProgressTracker;
-import carrental.util.PricingCalculation;
 
-public class CustomerMainWindow extends JFrame {
+public class CustomerMainWindow extends JFrame implements CustomerModificationListener{
     private Customer customer;
     private CarInventory carInventory;
     private JPanel contentPanel;
     private JTable unrentedCarsTable;
     private RentalHistory customersRentalHistory;
     private PricingAttributes pricingAttributes;
-    private CustomerProgressTracker progressTracker;
+    private transient CustomerProgressTracker progressTracker;
+    private RentalHistoryPanel rentalHistoryPanel;
+    private RentalHistory currentCustomerHistory;
+    private CustomerProgressBarPanel progressBarPanel;
 
     public CustomerMainWindow(Customer customer, CarInventory carInventory, RentalHistory entireRentalHistory, PricingAttributes pricingAttributes) {
         this.customer = customer;
@@ -196,9 +199,8 @@ public class CustomerMainWindow extends JFrame {
 
         // Set a minimum date for the start and end date chooser
         startDateChooser.setMinSelectableDate(new Date());
-        startDateChooser.addPropertyChangeListener("date", e -> {
-            endDateChooser.setMinSelectableDate(startDateChooser.getDate());
-        });
+        startDateChooser.addPropertyChangeListener("date", e ->
+            endDateChooser.setMinSelectableDate(startDateChooser.getDate()));
 
         // Set the date format for the date choosers
         startDateChooser.setDateFormatString("yyyy-MM-dd");
@@ -342,7 +344,7 @@ public class CustomerMainWindow extends JFrame {
             Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
             Date[] dateRange = showDateSelectionDialog(contentPanel);
 
-            if (dateRange != null) {
+            if (dateRange.length != 0) {
                 Date startDate = dateRange[0];
                 Date endDate = dateRange[1];
     
@@ -351,16 +353,11 @@ public class CustomerMainWindow extends JFrame {
     
                 if (success) {
                     // Update the table with the new inventory
-                    double durationBasedPrice = PricingCalculation.calculateDurationBasedPriceWithBase(
-                            selectedCar.getPrice(), startDate, endDate, pricingAttributes);
-                    double additionalServicesPrice = PricingCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
-                            pricingAttributes);
-                    double finalPrice = PricingCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
+                    double finalPrice = customer.calculateRentalPrice(selectedCar, startDate, endDate, pricingAttributes);
                     RentalRecord customerRecord = new RentalRecord(selectedCar, customer, finalPrice);
-                    PricingCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
                     selectedCar.addRentalInterval(customerRecord.getRentId(), startDate, endDate);
                     customersRentalHistory.addRentalRecord(customerRecord);
-                    customer.checkAndUpgrade(customersRentalHistory);
+                    customer = customer.checkAndUpgrade(customersRentalHistory);
                     progressTracker.updateProgress(customer.getUsername(), customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
                     updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
                 } else {
@@ -381,9 +378,8 @@ public class CustomerMainWindow extends JFrame {
 
         // Set a minimum date for the start and end date chooser
         startDateChooser.setMinSelectableDate(new Date());
-        startDateChooser.addPropertyChangeListener("date", e -> {
-            endDateChooser.setMinSelectableDate(startDateChooser.getDate());
-        });
+        startDateChooser.addPropertyChangeListener("date", e ->
+            endDateChooser.setMinSelectableDate(startDateChooser.getDate()));
         panel.add(new JLabel("Start Date:"));
         panel.add(startDateChooser);
         panel.add(new JLabel("End Date:"));
@@ -399,39 +395,33 @@ public class CustomerMainWindow extends JFrame {
             return new Date[]{startDate, endDate};
         }
 
-        return null;
+        return new Date[0];
     }
 
     private void showAccountView() {
         contentPanel.removeAll();
 
         // Create instances of RentalHistoryPanel and AccountPanel
-        RentalHistory currentCustomerHistory = customersRentalHistory
-                .getRentalHistoryForCustomer(customer.getUsername());
-        RentalHistoryPanel rentalHistoryPanel = new RentalHistoryPanel(currentCustomerHistory);
+        currentCustomerHistory = customersRentalHistory.getRentalHistoryForCustomer(customer.getUsername());
+        rentalHistoryPanel = new RentalHistoryPanel(currentCustomerHistory);
         AccountPanel accountPanel = new AccountPanel(customer);
-        CustomerProgressBarPanel progressBarPanel = new CustomerProgressBarPanel(progressTracker,
-                customer.getUsername(),
+        progressBarPanel = new CustomerProgressBarPanel(progressTracker, customer.getUsername(),
                 customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
 
         // Create FutureReservationsPanel with the customer's rental records
+        
         FutureReservationsPanel futureReservationsPanel = new FutureReservationsPanel(
                 currentCustomerHistory.getCustomerRentalMap().get(customer.getUsername()), carInventory, customersRentalHistory, customer);
 
-        customersRentalHistory.updateOriginalHistory(currentCustomerHistory);
-        progressTracker.updateProgress(customer.getUsername(),
-                customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
-        //rentalHistoryPanel.updateTextArea(currentCustomerHistory);
-        // Create a container panel with vertical BoxLayout
+        futureReservationsPanel.setCustomerModificationListener(this);
+
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new BoxLayout(northPanel, BoxLayout.Y_AXIS));
         northPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 30, 10)); // Adjust the values as needed
 
-        // Add AccountPanel, CustomerProgressBarPanel, and FutureReservationsPanel to
-        // the container panel
         northPanel.add(accountPanel);
         northPanel.add(progressBarPanel);
-        northPanel.add(Box.createRigidArea(new Dimension(0, 25))); // Adjust the height (10 in this case) as needed
+        northPanel.add(Box.createRigidArea(new Dimension(0, 25)));
         northPanel.add(futureReservationsPanel);
 
         // Add the container panel to the content panel
@@ -440,6 +430,17 @@ public class CustomerMainWindow extends JFrame {
 
         contentPanel.revalidate();
         contentPanel.repaint();
+    }
+
+    @Override
+    public void onCustomerModified(Customer modifiedCustomer) {
+        this.customer = modifiedCustomer;
+        customersRentalHistory.updateOriginalHistory(currentCustomerHistory);
+        progressTracker.updateProgress(customer.getUsername(),
+                customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
+        progressBarPanel.setNumberOfReservations(customersRentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
+        progressBarPanel.updateProgressBar();
+        rentalHistoryPanel.updateTextArea(currentCustomerHistory);
     }
 
 
