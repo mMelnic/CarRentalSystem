@@ -4,6 +4,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -55,8 +57,14 @@ public class AdminMainWindow extends JFrame {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         // Create a side panel for navigation
-        JPanel sidePanel = createSidePanel(rentalHistory);
-        mainPanel.add(sidePanel, BorderLayout.WEST);
+        JTree navigationTree = createNavigationTree(rentalHistory);
+
+        // Add the tree to a scroll pane
+        JScrollPane treeScrollPane = new JScrollPane(navigationTree);
+        treeScrollPane.setPreferredSize(new Dimension(200, 0));
+
+        // Add components to the main frame
+        mainPanel.add(treeScrollPane, BorderLayout.WEST);
 
         // Initialize the content panel
         contentPanel = new JPanel(new BorderLayout());
@@ -74,52 +82,48 @@ public class AdminMainWindow extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 
-    private JPanel createSidePanel(RentalHistory rentalHistory) {
-        JPanel sidePanel = new JPanel();
-        sidePanel.setLayout(new BoxLayout(sidePanel, BoxLayout.Y_AXIS));
-        sidePanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK), // Left border
-                BorderFactory.createEmptyBorder(50, 10, 0, 10) // Empty border (top, left, bottom, right)
-        ));
+    private JTree createNavigationTree(RentalHistory rentalHistory) {
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Admin Main Window");
 
-        // Add title
-        JLabel titleLabel = new JLabel("Admin Main Window");
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        sidePanel.add(titleLabel);
+        DefaultMutableTreeNode carDatabaseNode = new DefaultMutableTreeNode("Car Database");
+        DefaultMutableTreeNode rentalHistoryNode = new DefaultMutableTreeNode("Rental History");
+        DefaultMutableTreeNode pricesNode = new DefaultMutableTreeNode("Service Prices");
+        DefaultMutableTreeNode logoutNode = new DefaultMutableTreeNode("Log Out");
 
-        sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
+        root.add(carDatabaseNode);
+        root.add(rentalHistoryNode);
+        root.add(pricesNode);
+        root.add(logoutNode);
 
-        JButton carDatabaseButton = new JButton("Car Database");
-        JButton rentalHistoryButton = new JButton("Rental History");
-        JButton pricesButton = new JButton("Service Prices");
-        JButton logoutButton = new JButton("Log Out");
+        JTree navigationTree = new JTree(root);
+        navigationTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
-        // Add action listeners for navigation buttons
-        carDatabaseButton.addActionListener(e -> showCarDatabaseView());
-        rentalHistoryButton.addActionListener(e -> showRentalHistoryView(rentalHistory));
-        pricesButton.addActionListener(e -> showPricesPanelView());
-        logoutButton.addActionListener(e -> {
-            new UserInterface(carInventory, rentalHistory, pricingAttributes);
-            carInventory.serializeCarInventory("carInventory.ser");
-            dispose();
+        navigationTree.setBorder(new EmptyBorder(new Insets(35, 20, 0, 0)));
+        // Add action listeners for navigation nodes
+        navigationTree.addTreeSelectionListener(e -> {
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) navigationTree.getLastSelectedPathComponent();
+            if (selectedNode != null) {
+                String nodeName = selectedNode.toString();
+                switch (nodeName) {
+                    case "Car Database":
+                        showCarDatabaseView();
+                        break;
+                    case "Rental History":
+                        showRentalHistoryView(rentalHistory);
+                        break;
+                    case "Service Prices":
+                        showPricesPanelView();
+                        break;
+                    case "Log Out":
+                        new UserInterface(carInventory, rentalHistory, pricingAttributes);
+                        carInventory.serializeCarInventory("carInventory.ser");
+                        dispose();
+                        break;
+                }
+            }
         });
 
-        // Add buttons to the side panel
-        carDatabaseButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        rentalHistoryButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        pricesButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        logoutButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        sidePanel.add(carDatabaseButton);
-        sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        sidePanel.add(rentalHistoryButton);
-        sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        sidePanel.add(pricesButton);
-        sidePanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        sidePanel.add(logoutButton);
-
-        return sidePanel;
+        return navigationTree;
     }
 
     private void showCarDatabaseView() {

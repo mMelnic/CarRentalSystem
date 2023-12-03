@@ -22,8 +22,6 @@ public class RentalRecord implements Serializable{
         isCancelled = false;
     }
 
-    // Getters and setters for the fields
-
     public Car getRentedCar() {
         return rentedCar;
     }
@@ -75,6 +73,5 @@ public class RentalRecord implements Serializable{
         }
         return false; // Modification not allowed if rentedCar is null
     }
-
 }
 

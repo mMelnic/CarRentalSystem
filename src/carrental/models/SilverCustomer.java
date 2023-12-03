@@ -2,10 +2,9 @@ package carrental.models;
 
 import java.util.Date;
 
-import carrental.util.PricingCalculation;
+import carrental.util.PriceCalculation;
 
 public class SilverCustomer extends Customer {
-    //private static final long serialVersionUID = -7706992655032230086L;
     
     public SilverCustomer(String username, String password, String fullName, String email) {
         super(username, password, fullName, email);
@@ -14,16 +13,16 @@ public class SilverCustomer extends Customer {
     @Override
     public double calculateRentalPrice(Car selectedCar, Date startDate, Date endDate, PricingAttributes pricingAttributes) {
         // Default pricing logic for regular customers
-        double durationBasedPrice = PricingCalculation.calculateDiscountedDurationBasedPrice(
+        double durationBasedPrice = PriceCalculation.calculateDiscountedDurationBasedPrice(
                 selectedCar.getPrice(), startDate, endDate, pricingAttributes);
-        double additionalServicesPrice = PricingCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
+        double additionalServicesPrice = PriceCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
                 pricingAttributes);
 
-        double discountedAdditionalServicesPrice = PricingCalculation.calculateDiscountedPrice(additionalServicesPrice, 70);
-        double finalPrice = PricingCalculation.calculateFinalPrice(durationBasedPrice, discountedAdditionalServicesPrice);
+        double discountedAdditionalServicesPrice = PriceCalculation.calculateDiscountedPrice(additionalServicesPrice, 70);
+        double finalPrice = PriceCalculation.calculateFinalPrice(durationBasedPrice, discountedAdditionalServicesPrice);
 
         // Display the price window
-        PricingCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, discountedAdditionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
+        PriceCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, discountedAdditionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
         return finalPrice;
     }
 }

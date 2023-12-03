@@ -2,18 +2,18 @@ package carrental.models;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import carrental.util.Serialization;
 
 public class RentalHistory implements Serializable {
     private Map<String, List<RentalRecord>> customerRentalMap;
@@ -25,6 +25,18 @@ public class RentalHistory implements Serializable {
         this.customerRentalMap = new HashMap<>();
         this.dateRentalMap = new HashMap<>();
         this.numberOfReservationsMap = new HashMap<>();
+    }
+
+    public Map<String, List<RentalRecord>> getCustomerRentalMap() {
+        return customerRentalMap;
+    }
+
+    public Map<Date, List<RentalRecord>> getDateRentalMap() {
+        return dateRentalMap;
+    }
+
+    public int getNumberOfReservationsForCustomer(String customerUsername) {
+        return numberOfReservationsMap.getOrDefault(customerUsername, 0);
     }
 
     public void addRentalRecord(RentalRecord rentalRecord) {
@@ -40,48 +52,12 @@ public class RentalHistory implements Serializable {
         numberOfReservationsMap.merge(customerIdentifier, 1, Integer::sum);
     }
 
-    public int getNumberOfReservationsForCustomer(String customerUsername) {
-        return numberOfReservationsMap.getOrDefault(customerUsername, 0);
-    }
-
     public void decreaseNumberOfReservations(String customerUsername) {
         numberOfReservationsMap.merge(customerUsername, -1, Integer::sum);
         // If the number becomes zero, remove the entry from the map
         if (numberOfReservationsMap.get(customerUsername) <= 0) {
             numberOfReservationsMap.remove(customerUsername);
         }
-    }
-
-    // Getters for the maps
-
-    public Map<String, List<RentalRecord>> getCustomerRentalMap() {
-        return customerRentalMap;
-    }
-
-    public Map<Date, List<RentalRecord>> getDateRentalMap() {
-        return dateRentalMap;
-    }
-
-    public RentalHistory getRentalHistoryInDateRange(Date startDate, Date endDate) {
-        RentalHistory filteredHistory = new RentalHistory();
-
-        // Convert Date to LocalDate
-        LocalDate startLocalDate = startDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-        LocalDate endLocalDate = endDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-        for (Map.Entry<Date, List<RentalRecord>> entry : dateRentalMap.entrySet()) {
-            Date transactionDate = entry.getKey();
-            LocalDate transactionLocalDate = transactionDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-            // Compare only the date part
-            if (!transactionLocalDate.isBefore(startLocalDate) && !transactionLocalDate.isAfter(endLocalDate)) {
-                for (RentalRecord myRecord : entry.getValue()) {
-                    filteredHistory.addRentalRecord(myRecord);
-                }
-            }
-        }
-
-        return filteredHistory;
     }
 
     public RentalHistory getRentalHistoryForCustomer(String customerUsername) {
@@ -96,6 +72,33 @@ public class RentalHistory implements Serializable {
         }
     
         return filteredHistory;
+    }
+
+    public RentalHistory getRentalHistoryInDateRange(Date startDate, Date endDate) {
+        RentalHistory filteredHistory = new RentalHistory();
+
+        // Convert Date to LocalDate
+        // todo have a utility class with a method to convert date to local date
+        LocalDate startLocalDate = dateToLocalDate(startDate);
+        LocalDate endLocalDate = dateToLocalDate(endDate);
+
+        for (Map.Entry<Date, List<RentalRecord>> entry : dateRentalMap.entrySet()) {
+            Date transactionDate = entry.getKey();
+            LocalDate transactionLocalDate = dateToLocalDate(transactionDate);
+
+            // Compare only the date part
+            if (!transactionLocalDate.isBefore(startLocalDate) && !transactionLocalDate.isAfter(endLocalDate)) {
+                for (RentalRecord myRecord : entry.getValue()) {
+                    filteredHistory.addRentalRecord(myRecord);
+                }
+            }
+        }
+
+        return filteredHistory;
+    }
+
+    private LocalDate dateToLocalDate(Date date) {
+        return date.toInstant().atZone(Calendar.getInstance().getTimeZone().toZoneId()).toLocalDate();
     }
 
     public void updateOriginalHistory(RentalHistory updatedHistory) {
@@ -130,14 +133,9 @@ public class RentalHistory implements Serializable {
         }
     }
     
-
-    // Save RentalHistory to a file
-    public void saveToFile(String filePath) {
-        try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(filePath))) {
-            outputStream.writeObject(this);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    // Save RentalHistory to a file when log out and when close customer main window
+    public void saveRentalHistoryToFile(String filePath) {
+        Serialization.serializeObject(this, filePath);
     }
 
     public static RentalHistory loadFromFile(String filePath) {
@@ -151,5 +149,5 @@ public class RentalHistory implements Serializable {
             e.printStackTrace();
             return null;
         }
-    }    
+    }
 }

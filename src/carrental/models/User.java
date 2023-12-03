@@ -12,7 +12,6 @@ public class User implements Serializable{
     private String fullName;
     private String email;
 
-    // Constructors
     public User(String username, String password, String fullName, String email) {
         this.username = username;
         this.password = password;
@@ -20,7 +19,6 @@ public class User implements Serializable{
         this.email = email;
     }
 
-    // Getters and Setters
     public String getUsername() {
         return username;
     }
@@ -53,6 +51,7 @@ public class User implements Serializable{
         this.email = email;
     }
 
+    // todo check if I can have users with the same username
     public boolean isValidUser() {
         return isValidUsername(this.getUsername()) && isValidPassword(this.getPassword())
                 && isValidFullName(this.getFullName()) && isValidEmail(this.getEmail());
@@ -67,7 +66,7 @@ public class User implements Serializable{
     }
 
     private boolean isValidFullName(String fullName) {
-        return fullName != null && !fullName.isEmpty() && fullName.matches("[a-zA-Z\\s']+");
+        return fullName != null && !fullName.isEmpty() && fullName.matches("^[a-zA-Z\\s']+$");
     }
 
     private boolean isValidEmail(String email) {
@@ -75,7 +74,7 @@ public class User implements Serializable{
             return false;
         }
 
-        String[] validEmailExtensions = {"com", "net", "org", "edu"}; // Add more extensions as needed
+        String[] validEmailExtensions = {"com", "net", "org", "edu"};
         String regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+(" +
                 String.join("|", validEmailExtensions) + ")$";
 

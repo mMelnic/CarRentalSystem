@@ -4,13 +4,10 @@ import java.util.Date;
 import java.util.Set;
 
 import carrental.util.CustomerAuthentication;
-import carrental.util.PricingCalculation;
+import carrental.util.PriceCalculation;
+import carrental.util.Thresholds;
 
 public class Customer extends User{
-    private static final int REGULAR_TO_BRONZE_THRESHOLD = 5;
-    private static final int BRONZE_TO_SILVER_THRESHOLD = 10;
-    private static final int SILVER_TO_GOLD_THRESHOLD = 20;
-
     private static final long serialVersionUID = 3493219094674800571L;
 
     public Customer(String username, String password, String fullName, String email) {
@@ -25,11 +22,11 @@ public class Customer extends User{
         int numberOfReservations = rentalHistory.getNumberOfReservationsForCustomer(getUsername());
         String username = getUsername();
 
-        if (numberOfReservations >= REGULAR_TO_BRONZE_THRESHOLD && !(this instanceof BronzeCustomer) && !(this instanceof SilverCustomer) && !(this instanceof GoldCustomer)) {
+        if (numberOfReservations >= Thresholds.REGULAR_TO_BRONZE.getThreshold() && !(this instanceof BronzeCustomer) && !(this instanceof SilverCustomer) && !(this instanceof GoldCustomer)) {
             return CustomerAuthentication.upgradeCustomerToBronze(username);
-        } else if (numberOfReservations >= BRONZE_TO_SILVER_THRESHOLD && !(this instanceof SilverCustomer) && !(this instanceof GoldCustomer)) {
+        } else if (numberOfReservations >= Thresholds.BRONZE_TO_SILVER.getThreshold() && !(this instanceof SilverCustomer) && !(this instanceof GoldCustomer)) {
             return CustomerAuthentication.upgradeCustomerToSilver(username);
-        } else if (numberOfReservations >= SILVER_TO_GOLD_THRESHOLD && !(this instanceof GoldCustomer)) {
+        } else if (numberOfReservations >= Thresholds.SILVER_TO_GOLD.getThreshold() && !(this instanceof GoldCustomer)) {
             return CustomerAuthentication.upgradeCustomerToGold(username);
         }
 
@@ -40,11 +37,11 @@ public class Customer extends User{
         int numberOfReservations = rentalHistory.getNumberOfReservationsForCustomer(getUsername());
         String username = getUsername();
 
-        if (numberOfReservations < SILVER_TO_GOLD_THRESHOLD && this instanceof GoldCustomer) {
+        if (numberOfReservations < Thresholds.SILVER_TO_GOLD.getThreshold() && this instanceof GoldCustomer) {
             return CustomerAuthentication.downgradeGoldToSilver(username);
-        } else if (numberOfReservations < BRONZE_TO_SILVER_THRESHOLD && this instanceof SilverCustomer) {
+        } else if (numberOfReservations < Thresholds.BRONZE_TO_SILVER.getThreshold() && this instanceof SilverCustomer) {
             return CustomerAuthentication.downgradeSilverToBronze(username);
-        } else if (numberOfReservations < REGULAR_TO_BRONZE_THRESHOLD && this instanceof BronzeCustomer) {
+        } else if (numberOfReservations < Thresholds.REGULAR_TO_BRONZE.getThreshold() && this instanceof BronzeCustomer) {
             return CustomerAuthentication.downgradeBronzeToRegular(username);
         }
 
@@ -53,15 +50,14 @@ public class Customer extends User{
 
     public double calculateRentalPrice(Car selectedCar, Date startDate, Date endDate, PricingAttributes pricingAttributes) {
         // Default pricing logic for regular customers
-        double durationBasedPrice = PricingCalculation.calculateDurationBasedPrice(
+        double durationBasedPrice = PriceCalculation.calculateDurationBasedPrice(
                 selectedCar.getPrice(), startDate, endDate, pricingAttributes);
-        double additionalServicesPrice = PricingCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
+        double additionalServicesPrice = PriceCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
                 pricingAttributes);
-        double finalPrice = PricingCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
+        double finalPrice = PriceCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
 
         // Display the price window
-        PricingCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
+        PriceCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, finalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
         return finalPrice;
     }
-
 }

@@ -97,11 +97,10 @@ public class PriceSetterPanel extends JPanel {
     private void setPricingAttributes() {
         // Check if pricingAttributes is null and instantiate it if necessary
         if (pricingAttributes == null) {
-            pricingAttributes = new PricingAttributes(); // Or initialize it in a way that makes sense for your
-                                                         // application
+            pricingAttributes = new PricingAttributes();
         }
 
-        // Now you can safely set the attributes
+        // Setting the attributes
         pricingAttributes.setWeeklyDiscountRate(parseDouble(weeklyDiscountRateField.getText()));
         pricingAttributes.setMonthlyDiscountRate(parseDouble(monthlyDiscountRateField.getText()));
         pricingAttributes.setPeakSeasonRateMultiplier(parseDouble(peakSeasonRateMultiplierField.getText()));
@@ -141,10 +140,6 @@ public class PriceSetterPanel extends JPanel {
                 && !leatherInteriorChargeField.getText().isEmpty()
                 && !sunroofChargeField.getText().isEmpty()
                 && !hybridTechnologyChargeField.getText().isEmpty();
-    }
-
-    public PricingAttributes getPricingAttributes() {
-        return pricingAttributes;
     }
 
     private double parseDouble(String text) {

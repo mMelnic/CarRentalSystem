@@ -76,4 +76,3 @@ public class FutureReservationsTableModel extends AbstractTableModel {
         return null;
     }
 }
-

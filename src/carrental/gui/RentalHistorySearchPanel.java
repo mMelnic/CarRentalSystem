@@ -61,6 +61,7 @@ public class RentalHistorySearchPanel extends JPanel {
                     // Filter rental history based on date range
                     RentalHistory filteredHistory = rentalHistory.getRentalHistoryInDateRange(startDate, endDate);
                     updateRentalHistoryTable(filteredHistory);
+                    adjustColumnSizes(rentalHistoryTable);
                 }
         });
 
@@ -71,8 +72,10 @@ public class RentalHistorySearchPanel extends JPanel {
     private void updateRentalHistoryTable(RentalHistory updatedRentalHistory) {
         // Update the table model with the new rental history
         rentalHistoryTable.setModel(new RentalHistoryTableModel(updatedRentalHistory));
+        adjustColumnSizes(rentalHistoryTable);
     }
 
+    // todo add it to a utility class to use for all tables
     private void adjustColumnSizes(JTable table) {
         // Adjust column widths based on content
         for (int i = 0; i < table.getColumnCount(); i++) {

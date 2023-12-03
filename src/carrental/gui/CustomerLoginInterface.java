@@ -14,6 +14,7 @@ public class CustomerLoginInterface extends JFrame{
     private CardLayout cardLayout;
     private JButton backButton;
 
+    // todo check if I can use a generic class for customer login interface and admin login interface
     public CustomerLoginInterface(JFrame mainInterface, CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         super("Customer Panel");
 
@@ -21,14 +22,12 @@ public class CustomerLoginInterface extends JFrame{
         cardLayout = new CardLayout();
         cardPanel.setLayout(cardLayout);
 
-        // CustomerPanel instance
         CustomerLoginPanel customerPanel = new CustomerLoginPanel(carInventory, rentalHistory, pricingAttributes);
 
         cardPanel.add(customerPanel, "Customer");
 
         // Back button
         backButton = new JButton("Back to Main Window");
-        
         backButton.addActionListener(e -> {
             mainInterface.setVisible(true);
             dispose();

@@ -2,7 +2,7 @@ package carrental.models;
 
 import java.util.Date;
 
-import carrental.util.PricingCalculation;
+import carrental.util.PriceCalculation;
 
 public class GoldCustomer extends Customer {
     
@@ -13,15 +13,15 @@ public class GoldCustomer extends Customer {
     @Override
     public double calculateRentalPrice(Car selectedCar, Date startDate, Date endDate, PricingAttributes pricingAttributes) {
         // Default pricing logic for regular customers
-        double durationBasedPrice = PricingCalculation.calculateDurationBasedPrice(
+        double durationBasedPrice = PriceCalculation.calculateDurationBasedPrice(
                 selectedCar.getPrice(), startDate, endDate, pricingAttributes);
-        double additionalServicesPrice = PricingCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
+        double additionalServicesPrice = PriceCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),
                 pricingAttributes);
-        double finalPrice = PricingCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
-        double discountedFinalPrice = PricingCalculation.calculateDiscountedPrice(finalPrice, 50);
+        double finalPrice = PriceCalculation.calculateFinalPrice(durationBasedPrice, additionalServicesPrice);
+        double discountedFinalPrice = PriceCalculation.calculateDiscountedPrice(finalPrice, 50);
 
         // Display the price window
-        PricingCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, discountedFinalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
+        PriceCalculation.displayPriceWindow(selectedCar.getPrice(), durationBasedPrice, additionalServicesPrice, discountedFinalPrice, selectedCar.getAdditionalFeatures(), pricingAttributes);
         return finalPrice;
     }
 }

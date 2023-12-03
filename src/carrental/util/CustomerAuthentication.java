@@ -1,5 +1,9 @@
 package carrental.util;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -12,7 +16,7 @@ import carrental.models.GoldCustomer;
 import carrental.models.SilverCustomer;
 
 public class CustomerAuthentication {
-    private static final Map<String, Customer> customerDatabase = new HashMap<>();
+    private static Map<String, Customer> customerDatabase = new HashMap<>();
     private static final String CUSTOMER_DATABASE_FILE = "customer_database.ser";
     private static final Logger logger = Logger.getLogger(CustomerAuthentication.class.getName());
 
@@ -28,31 +32,13 @@ public class CustomerAuthentication {
         saveCustomerDatabaseToFile();
     }
 
+    // todo generic method for authentication of admin and customer:
     public static Customer authenticateUser(String username, String password, String email) {
         Customer user = customerDatabase.get(username);
         if (user != null && user.getPassword().equals(password) && user.getEmail().equals(email)) {
             return user;
         }
         return null; // Authentication failed
-    }
-
-    public static void saveCustomerDatabaseToFile() {
-        Serialization.serializeObject(customerDatabase, CUSTOMER_DATABASE_FILE);
-    }
-
-    public static void loadCustomerDatabaseFromFile() {
-        try {
-            Object loadedObject = Serialization.deserializeObject(CUSTOMER_DATABASE_FILE);
-        
-            if (loadedObject instanceof Map) {
-                customerDatabase.clear();
-                customerDatabase.putAll((Map<String, Customer>) loadedObject);
-            } else {
-                logger.severe("Loaded object is null or not an instance of Map");
-            }
-        } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error loading customer database from file", e);
-        }
     }
 
     public static void removeUser(String username) {
@@ -71,16 +57,14 @@ public class CustomerAuthentication {
         }
     }
     
+    // todo generic method for upgrade and downgrade
     public static Customer upgradeCustomerToBronze(String username) {
         Customer customer = customerDatabase.get(username);
-
         if (customer != null && !(customer instanceof BronzeCustomer)) {
             BronzeCustomer bronzeCustomer = new BronzeCustomer(
                 customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
             );
             updateUser(username, bronzeCustomer);
-            System.out.println("Bronze update");
-
             return bronzeCustomer;
         }
         return customer;
@@ -88,14 +72,11 @@ public class CustomerAuthentication {
 
     public static Customer upgradeCustomerToSilver(String username) {
         Customer customer = customerDatabase.get(username);
-
         if (customer != null && !(customer instanceof SilverCustomer)) {
             SilverCustomer silverCustomer = new SilverCustomer(
                 customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
             );
             updateUser(username, silverCustomer);
-            System.out.println("Silver update");
-
             return silverCustomer;
         }
 
@@ -104,14 +85,11 @@ public class CustomerAuthentication {
 
     public static Customer upgradeCustomerToGold(String username) {
         Customer customer = customerDatabase.get(username);
-
         if (customer != null && !(customer instanceof GoldCustomer)) {
             GoldCustomer goldCustomer = new GoldCustomer(
                 customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail()
             );
             updateUser(username, goldCustomer);
-            System.out.println("Gold update");
-
             return goldCustomer;
         }
 
@@ -120,12 +98,10 @@ public class CustomerAuthentication {
 
     public static Customer downgradeGoldToSilver(String username) {
         Customer customer = customerDatabase.get(username);
-
         if (customer instanceof GoldCustomer) {
             SilverCustomer silverCustomer = new SilverCustomer(
                     customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail());
             updateUser(username, silverCustomer);
-            System.out.println("Downgrade Gold to Silver");
             return silverCustomer;
         }
 
@@ -134,12 +110,10 @@ public class CustomerAuthentication {
 
     public static Customer downgradeSilverToBronze(String username) {
         Customer customer = customerDatabase.get(username);
-
         if (customer instanceof SilverCustomer) {
             BronzeCustomer bronzeCustomer = new BronzeCustomer(
                     customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail());
             updateUser(username, bronzeCustomer);
-            System.out.println("Downgrade Silver to Bronze");
             return bronzeCustomer;
         }
 
@@ -148,15 +122,35 @@ public class CustomerAuthentication {
 
     public static Customer downgradeBronzeToRegular(String username) {
         Customer customer = customerDatabase.get(username);
-
         if (customer instanceof BronzeCustomer) {
             Customer regularCustomer = new Customer(
                     customer.getUsername(), customer.getPassword(), customer.getFullName(), customer.getEmail());
             updateUser(username, regularCustomer);
-            System.out.println("Downgrade Bronze to Regular");
             return regularCustomer;
         }
         return customer;
     }
 
+    public static void saveCustomerDatabaseToFile() {
+        Serialization.serializeObject(customerDatabase, CUSTOMER_DATABASE_FILE);
+    }
+
+    public static void loadCustomerDatabaseFromFile() {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(CUSTOMER_DATABASE_FILE))) {
+            Object loadedObject = inputStream.readObject();
+
+            if (loadedObject instanceof Map) {
+                customerDatabase.clear();
+                customerDatabase.putAll((Map<String, Customer>) loadedObject);
+            } else {
+                logger.severe("Loaded object is null or not an instance of Map");
+            }
+        } catch (FileNotFoundException e) {
+            logger.warning("Customer database file not found. Creating a new database.");
+            // If the file is not found, create a new instance of the database
+            customerDatabase = new HashMap<>();
+        } catch (IOException | ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "Error loading customer database from file", e);
+        }
+    }
 }

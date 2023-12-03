@@ -113,6 +113,8 @@ public class FutureReservationsPanel extends JPanel {
                 })
                 .toList();
     }
+    // todo check the selected car to not be null, otherwise it is no longer available
+    // todo do the same for modify and cancel
 
     private void modifyReservation(CarInventory carInventory, Customer customer, PricingAttributes charges, List<RentalRecord> rentalRecords) {
         int selectedRow = futureReservationsTable.getSelectedRow();
@@ -181,8 +183,8 @@ public class FutureReservationsPanel extends JPanel {
                 UUID rentId = selectedRecord.getRentId();
 
                 // Remove the rental interval from the rentedCar
-                rentedCar.removeRentalInterval(rentId);
-                selectedRecord.getRentedCar().removeRentalInterval(rentId);
+                rentedCar.removeRentalIntervalWithId(rentId);
+                selectedRecord.getRentedCar().removeRentalIntervalWithId(rentId);
 
                 // Set isCancelled attribute to true in the RentalRecord
                 selectedRecord.setCancelled(true);

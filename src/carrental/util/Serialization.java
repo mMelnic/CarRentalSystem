@@ -2,6 +2,7 @@ package carrental.util;
 
 import java.io.EOFException;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -31,5 +32,28 @@ public class Serialization {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static <T> T deserializeObject(String filePath, Class<T> myClass) {
+        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
+            Object obj = inputStream.readObject();
+            if (myClass.isInstance(obj)) {
+                return myClass.cast(obj);
+            } else {
+                System.out.println("Invalid file content. Unable to deserialize " + myClass.getSimpleName());
+                return null;
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found. Creating a new " + myClass.getSimpleName() + ".");
+            try {
+                return myClass.getDeclaredConstructor().newInstance();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                return null;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

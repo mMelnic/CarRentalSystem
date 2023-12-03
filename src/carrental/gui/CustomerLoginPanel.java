@@ -11,6 +11,7 @@ import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.util.CustomerAuthentication;
 
+// todo check if it's possible to create a class template for administrator/customer login panel
 public class CustomerLoginPanel extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -26,9 +27,9 @@ public class CustomerLoginPanel extends JPanel {
         this.carInventory = carInventory;
         this.rentalHistory = rentalHistory;
         this.pricingAttributes = pricingAttributes;
+
         initComponents();
         setLayout(new GridLayout(5, 2));
-
         add(new JLabel("Username:"));
         add(usernameField);
         add(new JLabel("Password:"));
@@ -54,25 +55,28 @@ public class CustomerLoginPanel extends JPanel {
     }
 
     private void customerLogin() {
-    String username = usernameField.getText();
-    String password = new String(passwordField.getPassword());
-    String email = emailField.getText();
+        String username = usernameField.getText();
+        String password = new String(passwordField.getPassword());
+        String email = emailField.getText();
 
-    Customer authenticatedUser = CustomerAuthentication.authenticateUser(username, password, email);
+        Customer authenticatedUser = CustomerAuthentication.authenticateUser(username, password, email);
 
-    if (authenticatedUser != null) {
-        JOptionPane.showMessageDialog(this, "Customer Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        if (authenticatedUser != null) {
+            JOptionPane.showMessageDialog(this, "Customer Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            openCustomerMainWindow(authenticatedUser);
+            
+        } else {
+            JOptionPane.showMessageDialog(this, "Customer Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
-        // Create and show the CustomerMainWindow
+    private void openCustomerMainWindow(Customer authenticatedUser) {
+        // Create and display the CustomerMainWindow
         CustomerMainWindow customerMainWindow = new CustomerMainWindow(authenticatedUser, carInventory, rentalHistory, pricingAttributes);
         customerMainWindow.setVisible(true);
-
         // Close the current login window if needed
         SwingUtilities.getWindowAncestor(this).dispose();
-    } else {
-        JOptionPane.showMessageDialog(this, "Customer Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
     }
-}
 
     private void customerCreateAccount() {
         String username = usernameField.getText();
@@ -81,6 +85,7 @@ public class CustomerLoginPanel extends JPanel {
         String email = emailField.getText();
 
         Customer newUser = new Customer(username, password, fullName, email);
+
         try {
             CustomerAuthentication.createUser(newUser);
             JOptionPane.showMessageDialog(this, "Customer Account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);

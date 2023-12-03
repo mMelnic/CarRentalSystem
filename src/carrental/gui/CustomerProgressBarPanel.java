@@ -23,6 +23,7 @@ public class CustomerProgressBarPanel extends JPanel {
         initializeComponents();
         updateProgressBar();
         startAutoUpdate(); // Optionally start a timer for automatic progress updates
+        // todo is the timer doing anything?
     }
 
     public void setNumberOfReservations(int numberOfReservations) {
@@ -57,6 +58,4 @@ public class CustomerProgressBarPanel extends JPanel {
             }
         }, 0, 1000); // Update every 1000 milliseconds (1 second)
     }
-
 }
-

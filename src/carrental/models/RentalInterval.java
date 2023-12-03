@@ -20,8 +20,16 @@ public class RentalInterval implements Serializable {
         return rentId;
     }
 
+    public void setRentId(UUID rentId) {
+        this.rentId = rentId;
+    }
+
     public Date getStartDate() {
         return startDate;
+    }
+
+    public void setStartDate(Date startDate) {
+        this.startDate = startDate;
     }
 
     public Date getEndDate() {
@@ -30,13 +38,5 @@ public class RentalInterval implements Serializable {
 
     public void setEndDate(Date endDate) {
         this.endDate = endDate;
-    }
-
-    public void setRentId(UUID rentId) {
-        this.rentId = rentId;
-    }
-
-    public void setStartDate(Date startDate) {
-        this.startDate = startDate;
     }
 }

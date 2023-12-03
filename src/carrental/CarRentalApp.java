@@ -8,11 +8,12 @@ import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.util.AdminAuthentication;
 import carrental.util.CustomerAuthentication;
+import carrental.util.Serialization;
 
 public class CarRentalApp {
     public static void main(String[] args) {
-        CarInventory loadedCarInventory = CarInventory.deserializeCarInventory("carInventory.ser");
-        RentalHistory entireRentalHistory = RentalHistory.loadFromFile("rental_history.ser");
+        CarInventory loadedCarInventory = Serialization.deserializeObject("carInventory.ser", CarInventory.class);
+        RentalHistory entireRentalHistory = Serialization.deserializeObject("rental_history.ser", RentalHistory.class);
         AdminAuthentication.loadAdminDatabaseFromFile();
         CustomerAuthentication.loadCustomerDatabaseFromFile();
         PricingAttributes charges = PricingAttributes.deserializePricingAttributes("pricingAttributes.ser");

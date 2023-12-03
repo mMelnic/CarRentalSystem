@@ -136,7 +136,6 @@ public class PricingAttributes implements Serializable{
     }
 
     public static PricingAttributes deserializePricingAttributes(String filePath) {
-    
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
             Object loadedObject = inputStream.readObject();
     
@@ -148,9 +147,7 @@ public class PricingAttributes implements Serializable{
                 return null;
             }
         } catch (FileNotFoundException e) {
-            // Handle the case where the file does not exist
-            System.out.println("File not found. Creating a new PricingAttributes and saving to file.");
-    
+            // Handle the case where the file does not exist    
             return new PricingAttributes(1,1,1,6,8,1,1,1,1,1,1); // Or create a new PricingAttributes instance
 
         } catch (IOException | ClassNotFoundException e) {
@@ -158,6 +155,4 @@ public class PricingAttributes implements Serializable{
             return null;
         }
     }
-    
-
 }
