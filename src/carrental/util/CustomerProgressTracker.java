@@ -39,7 +39,7 @@ public class CustomerProgressTracker {
     }
 
     // Calculate progress based on the thresholds
-    private int calculateProgress(int numberOfReservations) {
+    public int calculateProgress(int numberOfReservations) {
         if (numberOfReservations >= Thresholds.SILVER_TO_GOLD.getThreshold()) {
             return 100; // Full progress for Gold
         } else if (numberOfReservations >= Thresholds.BRONZE_TO_SILVER.getThreshold()) {
