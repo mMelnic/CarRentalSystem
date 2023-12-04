@@ -31,6 +31,10 @@ public class RentalHistory implements Serializable {
         return dateRentalMap;
     }
 
+    public Map<String, Integer> getNumberOfReservationsMap() {
+        return numberOfReservationsMap;
+    }
+
     public int getNumberOfReservationsForCustomer(String customerUsername) {
         return numberOfReservationsMap.getOrDefault(customerUsername, 0);
     }
