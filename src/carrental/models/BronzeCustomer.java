@@ -20,7 +20,7 @@ public class BronzeCustomer extends Customer {
                 pricingAttributes);
 
         double discountedAdditionalServicesPrice = PriceCalculation.calculateDiscountedPrice(additionalServicesPrice,
-                60);
+                95);
         double finalPrice = PriceCalculation.calculateFinalPrice(durationBasedPrice, discountedAdditionalServicesPrice);
 
         // Display the price window

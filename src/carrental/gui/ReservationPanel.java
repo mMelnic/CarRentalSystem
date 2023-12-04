@@ -1,4 +1,4 @@
-package carrental.panels;
+package carrental.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

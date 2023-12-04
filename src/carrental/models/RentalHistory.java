@@ -1,9 +1,5 @@
 package carrental.models;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -135,16 +131,5 @@ public class RentalHistory implements Serializable {
     // Save RentalHistory to a file when log out and when close customer main window
     public void saveRentalHistoryToFile(String filePath) {
         SerializationUtil.serializeObject(this, filePath);
-    }
-
-    public static RentalHistory loadFromFile(String filePath) {
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
-            return (RentalHistory) inputStream.readObject();
-        } catch (FileNotFoundException e) {
-            return new RentalHistory();
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

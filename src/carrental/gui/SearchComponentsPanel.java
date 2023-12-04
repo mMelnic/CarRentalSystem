@@ -1,4 +1,4 @@
-package carrental.panels;
+package carrental.gui;
 
 import javax.swing.*;
 import com.toedter.calendar.JDateChooser;
