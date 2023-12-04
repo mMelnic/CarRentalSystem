@@ -1,4 +1,4 @@
-package carrental.gui;
+package carrental.tables;
 
 import javax.swing.table.AbstractTableModel;
 

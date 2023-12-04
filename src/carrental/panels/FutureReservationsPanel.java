@@ -1,4 +1,4 @@
-package carrental.gui;
+package carrental.panels;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -12,6 +12,7 @@ import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.models.RentalInterval;
 import carrental.models.RentalRecord;
+import carrental.tables.FutureReservationsTableModel;
 import carrental.util.CustomerModificationListener;
 import carrental.util.PriceUpdateListener;
 

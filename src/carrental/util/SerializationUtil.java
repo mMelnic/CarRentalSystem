@@ -1,6 +1,5 @@
 package carrental.util;
 
-import java.io.EOFException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -12,11 +11,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Serialization {
-    private static final Logger logger = Logger.getLogger(Serialization.class.getName());
+public class SerializationUtil {
+    private static final Logger logger = Logger.getLogger(SerializationUtil.class.getName());
 
     // Private constructor to prevent instantiation
-    private Serialization() {}
+    private SerializationUtil() {}
 
     public static void serializeObject(Object obj, String filePath) {
         try (ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(filePath))) {

@@ -1,18 +1,18 @@
-package carrental.gui;
+package carrental.panels;
 
 import java.awt.GridLayout;
 
 import javax.swing.*;
 
 import carrental.exceptions.AccountCreationException;
+import carrental.gui.AdminMainWindow;
+import carrental.models.Administrator;
 import carrental.models.CarInventory;
-import carrental.models.Customer;
 import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
-import carrental.util.CustomerAuthentication;
+import carrental.util.AdminAuthentication;
 
-// todo check if it's possible to create a class template for administrator/customer login panel
-public class CustomerLoginPanel extends JPanel {
+public class AdminLoginPanel extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTextField fullNameField;
@@ -23,7 +23,7 @@ public class CustomerLoginPanel extends JPanel {
     private RentalHistory rentalHistory;
     private PricingAttributes pricingAttributes;
 
-    public CustomerLoginPanel(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
+    public AdminLoginPanel(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         this.carInventory = carInventory;
         this.rentalHistory = rentalHistory;
         this.pricingAttributes = pricingAttributes;
@@ -41,8 +41,8 @@ public class CustomerLoginPanel extends JPanel {
         add(loginButton);
         add(createAccountButton);
 
-        loginButton.addActionListener(e -> customerLogin());
-        createAccountButton.addActionListener(e -> customerCreateAccount());
+        loginButton.addActionListener(e -> adminLogin());
+        createAccountButton.addActionListener(e -> adminCreateAccount());
     }
 
     private void initComponents() {
@@ -54,41 +54,40 @@ public class CustomerLoginPanel extends JPanel {
         createAccountButton = new JButton("Create Account");
     }
 
-    private void customerLogin() {
+    private void adminLogin() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         String email = emailField.getText();
 
-        Customer authenticatedUser = CustomerAuthentication.authenticateUser(username, password, email);
+        Administrator authenticatedUser = AdminAuthentication.authenticateUser(username, password, email);
 
         if (authenticatedUser != null) {
-            JOptionPane.showMessageDialog(this, "Customer Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            openCustomerMainWindow(authenticatedUser);
-            
+            JOptionPane.showMessageDialog(this, "Administrator Login successful!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            // Open a new window upon successful login
+            openAdminMainWindow(authenticatedUser);
         } else {
-            JOptionPane.showMessageDialog(this, "Customer Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Administrator Login failed. Please check your credentials.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    private void openCustomerMainWindow(Customer authenticatedUser) {
-        // Create and display the CustomerMainWindow
-        CustomerMainWindow customerMainWindow = new CustomerMainWindow(authenticatedUser, carInventory, rentalHistory, pricingAttributes);
-        customerMainWindow.setVisible(true);
-        // Close the current login window if needed
+    private void openAdminMainWindow(Administrator authenticatedUser) {
+        AdminMainWindow adminMainWindow = new AdminMainWindow(authenticatedUser, carInventory,  rentalHistory, pricingAttributes);
+        adminMainWindow.setVisible(true);
+        // Close the current login window
         SwingUtilities.getWindowAncestor(this).dispose();
     }
 
-    private void customerCreateAccount() {
+    private void adminCreateAccount() {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         String fullName = fullNameField.getText();
         String email = emailField.getText();
 
-        Customer newUser = new Customer(username, password, fullName, email);
+        Administrator newUser = new Administrator(username, password, fullName, email);
 
         try {
-            CustomerAuthentication.createUser(newUser);
-            JOptionPane.showMessageDialog(this, "Customer Account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            AdminAuthentication.createUser(newUser);
+            JOptionPane.showMessageDialog(this, "Administrator Account created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
         } catch (AccountCreationException e) {
             JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

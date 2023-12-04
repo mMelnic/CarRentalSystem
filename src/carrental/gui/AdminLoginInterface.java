@@ -8,6 +8,7 @@ import javax.swing.*;
 import carrental.models.CarInventory;
 import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
+import carrental.panels.AdminLoginPanel;
 
 public class AdminLoginInterface extends JFrame{
     private JPanel cardPanel;

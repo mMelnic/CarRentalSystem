@@ -1,4 +1,4 @@
-package carrental.gui;
+package carrental.panels;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

@@ -127,10 +127,10 @@ public class CustomerAuthentication {
     }
 
     public static void saveCustomerDatabaseToFile() {
-        Serialization.serializeObject(customerDatabase, CUSTOMER_DATABASE_FILE);
+        SerializationUtil.serializeObject(customerDatabase, CUSTOMER_DATABASE_FILE);
     }
 
     public static void loadCustomerDatabaseFromFile() {
-        Serialization.loadDatabaseFromFile(CUSTOMER_DATABASE_FILE, customerDatabase);
+        SerializationUtil.loadDatabaseFromFile(CUSTOMER_DATABASE_FILE, customerDatabase);
     }
 }

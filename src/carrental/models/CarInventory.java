@@ -18,7 +18,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Predicate;
 
-import carrental.util.Serialization;
+import carrental.util.SerializationUtil;
 
 public class CarInventory implements Serializable {
     private Map<String, Car> carMap = new HashMap<>();
@@ -176,7 +176,7 @@ public class CarInventory implements Serializable {
     }
 
     public void serializeCarInventory(String filePath) {
-        Serialization.serializeObject(this, filePath); //TODO is it worth to get rid of this method?
+        SerializationUtil.serializeObject(this, filePath); //TODO is it worth to get rid of this method?
     }
 
     public static CarInventory deserializeCarInventory(String filePath) {

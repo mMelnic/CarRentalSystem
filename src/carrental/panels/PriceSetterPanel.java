@@ -1,4 +1,4 @@
-package carrental.gui;
+package carrental.panels;
 
 import java.awt.GridLayout;
 

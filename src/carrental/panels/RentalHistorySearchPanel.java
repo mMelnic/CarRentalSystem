@@ -1,10 +1,11 @@
-package carrental.gui;
+package carrental.panels;
 
 import javax.swing.*;
 
 import com.toedter.calendar.JDateChooser;
 
 import carrental.models.RentalHistory;
+import carrental.tables.RentalHistoryTableModel;
 import carrental.util.AdjustColumns;
 
 import java.awt.*;

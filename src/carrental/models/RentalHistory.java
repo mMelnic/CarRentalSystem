@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import carrental.util.Serialization;
+import carrental.util.SerializationUtil;
 
 public class RentalHistory implements Serializable {
     private Map<String, List<RentalRecord>> customerRentalMap;
@@ -134,7 +134,7 @@ public class RentalHistory implements Serializable {
     
     // Save RentalHistory to a file when log out and when close customer main window
     public void saveRentalHistoryToFile(String filePath) {
-        Serialization.serializeObject(this, filePath);
+        SerializationUtil.serializeObject(this, filePath);
     }
 
     public static RentalHistory loadFromFile(String filePath) {

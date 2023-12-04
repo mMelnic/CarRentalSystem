@@ -30,10 +30,10 @@ public class AdminAuthentication {
     }
 
     public static void saveAdminDatabaseToFile() {
-        Serialization.serializeObject(adminDatabase, ADMIN_DATABASE_FILE);
+        SerializationUtil.serializeObject(adminDatabase, ADMIN_DATABASE_FILE);
     }
 
     public static void loadAdminDatabaseFromFile() {
-        Serialization.loadDatabaseFromFile(ADMIN_DATABASE_FILE, adminDatabase);
+        SerializationUtil.loadDatabaseFromFile(ADMIN_DATABASE_FILE, adminDatabase);
     }
 }

@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import carrental.util.Serialization;
+import carrental.util.SerializationUtil;
 
 public class PricingAttributes implements Serializable{
     private double weeklyDiscountRate;
@@ -132,7 +132,7 @@ public class PricingAttributes implements Serializable{
     }
 
     public void serializePricingAttributes(String filePath) {
-        Serialization.serializeObject(this, filePath);
+        SerializationUtil.serializeObject(this, filePath);
     }
 
     public static PricingAttributes deserializePricingAttributes(String filePath) {

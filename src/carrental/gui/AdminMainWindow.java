@@ -12,6 +12,8 @@ import java.awt.event.WindowEvent;
 
 import carrental.models.Administrator;
 import carrental.models.Car.ComfortLevel;
+import carrental.panels.PriceSetterPanel;
+import carrental.panels.RentalHistorySearchPanel;
 import carrental.tables.AvailableCarsTableManager;
 import carrental.tables.CarTableManager;
 import carrental.util.AdminUtil;
