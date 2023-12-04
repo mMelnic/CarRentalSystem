@@ -7,6 +7,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Serialization {
@@ -23,15 +26,23 @@ public class Serialization {
         }
     }
 
-    public static Object deserializeObject(String filePath) {
+    public static <T> void loadDatabaseFromFile(String filePath, Map<String, T> database) {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
-            return inputStream.readObject();
-        } catch (EOFException eofException) {
-            logger.warning("Reached end of file unexpectedly: " + filePath);
+            Object loadedObject = inputStream.readObject();
+
+            if (loadedObject instanceof Map) {
+                database.clear();
+                database.putAll((Map<String, T>) loadedObject);
+            } else {
+                logger.warning("Loaded object is null or not an instance of Map");
+            }
+        } catch (FileNotFoundException e) {
+            logger.warning("Database file not found. Creating a new database.");
+            // If the file is not found, create a new instance of the database
+            database = new HashMap<>();
         } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Error loading database from file", e);
         }
-        return null;
     }
 
     public static <T> T deserializeObject(String filePath, Class<T> myClass) {

@@ -1,12 +1,7 @@
 package carrental.util;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import carrental.exceptions.AccountCreationException;
@@ -136,21 +131,6 @@ public class CustomerAuthentication {
     }
 
     public static void loadCustomerDatabaseFromFile() {
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(CUSTOMER_DATABASE_FILE))) {
-            Object loadedObject = inputStream.readObject();
-
-            if (loadedObject instanceof Map) {
-                customerDatabase.clear();
-                customerDatabase.putAll((Map<String, Customer>) loadedObject);
-            } else {
-                logger.severe("Loaded object is null or not an instance of Map");
-            }
-        } catch (FileNotFoundException e) {
-            logger.warning("Customer database file not found. Creating a new database.");
-            // If the file is not found, create a new instance of the database
-            customerDatabase = new HashMap<>();
-        } catch (IOException | ClassNotFoundException e) {
-            logger.log(Level.SEVERE, "Error loading customer database from file", e);
-        }
+        Serialization.loadDatabaseFromFile(CUSTOMER_DATABASE_FILE, customerDatabase);
     }
 }
