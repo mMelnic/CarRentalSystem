@@ -1,12 +1,11 @@
 package carrental.gui;
 
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 
 import com.toedter.calendar.JDateChooser;
 
 import carrental.models.RentalHistory;
+import carrental.util.AdjustColumns;
 
 import java.awt.*;
 import java.util.Date;
@@ -46,7 +45,7 @@ public class RentalHistorySearchPanel extends JPanel {
         // Second Panel: Rental History Table
         RentalHistoryTableModel tableModel = new RentalHistoryTableModel(rentalHistory);
         rentalHistoryTable = new JTable(tableModel);
-        adjustColumnSizes(rentalHistoryTable);
+        AdjustColumns.adjustColumnSizes(rentalHistoryTable);
 
         // Add the components to the main panel
         add(dateSelectionPanel, BorderLayout.NORTH);
@@ -61,7 +60,7 @@ public class RentalHistorySearchPanel extends JPanel {
                     // Filter rental history based on date range
                     RentalHistory filteredHistory = rentalHistory.getRentalHistoryInDateRange(startDate, endDate);
                     updateRentalHistoryTable(filteredHistory);
-                    adjustColumnSizes(rentalHistoryTable);
+                    AdjustColumns.adjustColumnSizes(rentalHistoryTable);
                 }
         });
 
@@ -72,27 +71,7 @@ public class RentalHistorySearchPanel extends JPanel {
     private void updateRentalHistoryTable(RentalHistory updatedRentalHistory) {
         // Update the table model with the new rental history
         rentalHistoryTable.setModel(new RentalHistoryTableModel(updatedRentalHistory));
-        adjustColumnSizes(rentalHistoryTable);
-    }
-
-    // todo add it to a utility class to use for all tables
-    private void adjustColumnSizes(JTable table) {
-        // Adjust column widths based on content
-        for (int i = 0; i < table.getColumnCount(); i++) {
-            TableColumn column = table.getColumnModel().getColumn(i);
-            int maxWidth = 0;
-
-            // Find the maximum width of the content in each column
-            for (int j = 0; j < table.getRowCount(); j++) {
-                TableCellRenderer cellRenderer = table.getCellRenderer(j, i);
-                Object value = table.getValueAt(j, i);
-                Component cellComponent = cellRenderer.getTableCellRendererComponent(table, value, false, false, j, i);
-                maxWidth = Math.max(maxWidth, cellComponent.getPreferredSize().width);
-            }
-
-            // Set the column width to the maximum content width + some padding
-            column.setPreferredWidth(maxWidth + 10);
-        }
+        AdjustColumns.adjustColumnSizes(rentalHistoryTable);
     }
 }
 

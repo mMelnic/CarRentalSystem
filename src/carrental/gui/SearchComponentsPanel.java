@@ -102,7 +102,7 @@ public class SearchComponentsPanel extends JPanel {
         startDateChooser.setDate(null);
         endDateChooser.setDate(null);
 
-        tableManager.updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
+        tableManager.updateTable(carInventory.getAvailableCarsInventoryToday());
     }
 
     private void performSearch() {
@@ -124,7 +124,7 @@ public class SearchComponentsPanel extends JPanel {
         if (hybridTechnologyCheckBox.isSelected()) selectedFeatures.add(Car.AdditionalFeatures.HYBRID_TECHNOLOGY);
         // Perform the search and update the table
         CarInventory searchResults = customer.searchCarToRent(manufacturer, model, comfortLevel, selectedFeatures, startDate, endDate, carInventory);
-        tableManager.updateTableWithSearchResults(searchResults);
+        tableManager.updateTable(searchResults);
     }
 
     private JPanel createDateChooserPanel() {

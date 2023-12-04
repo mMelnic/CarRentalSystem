@@ -57,7 +57,7 @@ public class ReservationPanel extends JPanel {
         SearchComponentsPanel searchComponentsPanel = new SearchComponentsPanel(tableManager, customer, carInventory);
 
         // Create table and scroll pane
-        JScrollPane tableScrollPane = tableManager.createTableScrollPane(carInventory);
+        JScrollPane tableScrollPane = tableManager.createTableScrollPane(carInventory.getAvailableCarsInventoryToday());
         // Create a titled border
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Available Cars per Today");
         Font availableCarsTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
@@ -103,7 +103,7 @@ public class ReservationPanel extends JPanel {
                     rentalHistory.addRentalRecord(customerRecord);
                     customer = customer.checkAndUpgrade(rentalHistory);
                     customerProgressTracker.updateProgress(customer.getUsername(), rentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
-                    tableManager.updateTableWithSearchResults(carInventory.getAvailableCarsInventoryToday());
+                    tableManager.updateTable(carInventory.getAvailableCarsInventoryToday());
                 } else {
                     // Display a message indicating that the car was not found
                     JOptionPane.showMessageDialog(contentPanel, "The car is unavailable for the selected period.", "Rental failed", JOptionPane.WARNING_MESSAGE);
@@ -142,6 +142,5 @@ public class ReservationPanel extends JPanel {
         return new Date[0];
     }
 
-    // You can add more custom methods or override JPanel methods if needed
 }
 

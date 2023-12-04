@@ -113,58 +113,95 @@ public class FutureReservationsPanel extends JPanel {
                 })
                 .toList();
     }
-    // todo check the selected car to not be null, otherwise it is no longer available
-    // todo do the same for modify and cancel
 
-    private void modifyReservation(CarInventory carInventory, Customer customer, PricingAttributes charges, List<RentalRecord> rentalRecords) {
+    private void modifyReservation(CarInventory carInventory, Customer customer, PricingAttributes charges,
+            List<RentalRecord> rentalRecords) {
         int selectedRow = futureReservationsTable.getSelectedRow();
         int registrationInfoColumnIndex = 2;
 
         if (selectedRow >= 0) {
-            // Get the selected rental record from the table model
-            RentalRecord selectedRecord = ((FutureReservationsTableModel) futureReservationsTable.getModel())
-                    .getRentalRecord(selectedRow);
+            RentalRecord selectedRecord = getSelectedRentalRecord(selectedRow);
+            String selectedRegistrationInfo = getSelectedRegistrationInfo(selectedRow, registrationInfoColumnIndex);
 
-            // Get the registration info of the selected car from the table model
-            String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
-
-            // Check if modification is allowed
-            if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
-                // Display a dialog to get new start and end dates
+            if (canModifyReservation(selectedRecord, carInventory, selectedRegistrationInfo)) {
                 Date[] newDateRange = showDateSelectionDialog(this);
 
                 if (newDateRange.length != 0) {
-                    Date newStartDate = newDateRange[0];
-                    Date newEndDate = newDateRange[1];
-                    Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
-                    Car rentedCarInTable = selectedRecord.getRentedCar();
-
-                    // Modify the reservation
-                    if (selectedCar.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate)) {
-                        // Update the table with the new reservation data
-                        rentedCarInTable.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate);
-                        double newPrice = customer.calculateRentalPrice(selectedCar, newStartDate, newEndDate, charges);
-                        selectedRecord.setTotalPrice(newPrice);
-                        if (priceUpdateListener != null) {
-                            priceUpdateListener.onPriceUpdate();                            
-                        }
-                        updateFutureReservationsTable(filterFutureReservations(rentalRecords));
-                        SwingUtilities.invokeLater(() ->
-                        JOptionPane.showMessageDialog(this, "Reservation modified successfully", "Success", JOptionPane.INFORMATION_MESSAGE));
-
-                    } else {
-                        JOptionPane.showMessageDialog(this, "Modification failed. The selected dates are not available.",
-                                "Modification Failed", JOptionPane.WARNING_MESSAGE);
-                    }
+                    modifyReservationWithNewDates(selectedRecord, selectedRegistrationInfo, carInventory, customer,
+                            charges, newDateRange, rentalRecords);
                 }
-            } else {
-                JOptionPane.showMessageDialog(this, "Modification not allowed for the selected reservation.",
-                        "Modification Not Allowed", JOptionPane.WARNING_MESSAGE);
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a reservation to modify.", "No Reservation Selected",
-                    JOptionPane.WARNING_MESSAGE);
+            showNoReservationSelectedMessage();
         }
+    }
+
+    private RentalRecord getSelectedRentalRecord(int selectedRow) {
+        return ((FutureReservationsTableModel) futureReservationsTable.getModel()).getRentalRecord(selectedRow);
+    }
+
+    private String getSelectedRegistrationInfo(int selectedRow, int registrationInfoColumnIndex) {
+        return (String) futureReservationsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
+    }
+
+    private boolean canModifyReservation(RentalRecord selectedRecord, CarInventory carInventory, String selectedRegistrationInfo) {
+        if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
+            Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+            if (selectedCar != null) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Selected car is no longer available for modification.",
+                        "Car Unavailable", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Modification not allowed for the selected reservation.",
+                    "Modification Not Allowed", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+    }
+
+    private void modifyReservationWithNewDates(RentalRecord selectedRecord, String selectedRegistrationInfo,
+            CarInventory carInventory, Customer customer, PricingAttributes charges,
+            Date[] newDateRange, List<RentalRecord> rentalRecords) {
+        Date newStartDate = newDateRange[0];
+        Date newEndDate = newDateRange[1];
+        Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+        Car rentedCarInTable = selectedRecord.getRentedCar();
+
+        if (selectedCar.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate)) {
+            updateReservationAndTable(selectedRecord, rentedCarInTable, newStartDate, newEndDate, customer, charges,
+                    rentalRecords);
+        } else {
+            showModificationFailedMessage();
+        }
+    }
+
+    private void updateReservationAndTable(RentalRecord selectedRecord, Car rentedCarInTable, Date newStartDate,
+            Date newEndDate,
+            Customer customer, PricingAttributes charges, List<RentalRecord> rentalRecords) {
+        rentedCarInTable.modifyReservation(selectedRecord.getRentId(), newStartDate, newEndDate);
+        double newPrice = customer.calculateRentalPrice(rentedCarInTable, newStartDate, newEndDate, charges);
+        selectedRecord.setTotalPrice(newPrice);
+
+        if (priceUpdateListener != null) {
+            priceUpdateListener.onPriceUpdate();
+        }
+
+        updateFutureReservationsTable(filterFutureReservations(rentalRecords));
+
+        SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(this, "Reservation modified successfully",
+                "Success", JOptionPane.INFORMATION_MESSAGE));
+    }
+
+    private void showModificationFailedMessage() {
+        JOptionPane.showMessageDialog(this, "Modification failed. The selected dates are not available.",
+                "Modification Failed", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void showNoReservationSelectedMessage() {
+        JOptionPane.showMessageDialog(this, "Please select a reservation to modify.", "No Reservation Selected",
+                JOptionPane.WARNING_MESSAGE);
     }
 
     private void cancelReservation(CarInventory carInventory, RentalHistory rentalHistory,
@@ -176,41 +213,57 @@ public class FutureReservationsPanel extends JPanel {
             FutureReservationsTableModel model = (FutureReservationsTableModel) futureReservationsTable.getModel();
             RentalRecord selectedRecord = model.getRentalRecord(selectedRow);
             String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow,
-                    registrationInfoColumnIndex);
+                        registrationInfoColumnIndex);
 
-            if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
+            if (canCancelReservation(selectedRecord, carInventory, selectedRegistrationInfo)) {
                 Car rentedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
                 UUID rentId = selectedRecord.getRentId();
 
-                // Remove the rental interval from the rentedCar
-                rentedCar.removeRentalIntervalWithId(rentId);
-                selectedRecord.getRentedCar().removeRentalIntervalWithId(rentId);
-
-                // Set isCancelled attribute to true in the RentalRecord
-                selectedRecord.setCancelled(true);
-
-                rentalHistory.decreaseNumberOfReservations(customer.getUsername());
-                this.customer = customer.checkAndDowngrade(rentalHistory);
-
-                if (customerModificationListener != null) {
-                    customerModificationListener.onCustomerModified(customer);
-                }
-
-                // Repaint the table to reflect the changes
+                removeRentalIntervalAndCancelReservation(rentedCar, selectedRecord, rentId, rentalHistory);
                 updateFutureReservationsTable(filterFutureReservations(rentalRecords));
 
                 JOptionPane.showMessageDialog(this, "Reservation cancelled successfully", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                JOptionPane.showMessageDialog(this, "Cancellation not allowed for the selected reservation.",
-                        "Cancellation Not Allowed", JOptionPane.WARNING_MESSAGE);
             }
         } else {
-            JOptionPane.showMessageDialog(this, "Please select a reservation to cancel.", "No Reservation Selected",
-                    JOptionPane.WARNING_MESSAGE);
+            showNoReservationSelectedMessage();
         }
     }
 
+    private boolean canCancelReservation(RentalRecord selectedRecord, CarInventory carInventory,
+            String selectedRegistrationInfo) {
+        if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
+            Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+            if (selectedCar != null) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(this, "Selected car is no longer available for cancellation.",
+                        "Car Unavailable", JOptionPane.WARNING_MESSAGE);
+                return false;
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Cancellation not allowed for the selected reservation.",
+                    "Cancellation Not Allowed", JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+    }
+
+    private void removeRentalIntervalAndCancelReservation(Car rentedCar, RentalRecord selectedRecord, UUID rentId,
+            RentalHistory rentalHistory) {
+        // Remove the rental interval from the rentedCar
+        rentedCar.removeRentalIntervalWithId(rentId);
+        selectedRecord.getRentedCar().removeRentalIntervalWithId(rentId);
+
+        // Set isCancelled attribute to true in the RentalRecord
+        selectedRecord.setCancelled(true);
+
+        rentalHistory.decreaseNumberOfReservations(customer.getUsername());
+        this.customer = customer.checkAndDowngrade(rentalHistory);
+
+        if (customerModificationListener != null) {
+            customerModificationListener.onCustomerModified(customer);
+        }
+    }
 
     public Date[] showDateSelectionDialog(Component parentComponent) {
         JDateChooser startDateChooser = createDatePicker("Select Start Date:");

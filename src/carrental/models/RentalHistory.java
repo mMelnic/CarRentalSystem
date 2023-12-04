@@ -78,7 +78,6 @@ public class RentalHistory implements Serializable {
         RentalHistory filteredHistory = new RentalHistory();
 
         // Convert Date to LocalDate
-        // todo have a utility class with a method to convert date to local date
         LocalDate startLocalDate = dateToLocalDate(startDate);
         LocalDate endLocalDate = dateToLocalDate(endDate);
 
@@ -142,8 +141,6 @@ public class RentalHistory implements Serializable {
         try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
             return (RentalHistory) inputStream.readObject();
         } catch (FileNotFoundException e) {
-            // File not found, create the file and return an empty RentalHistory
-            System.out.println("File not found. Creating a new RentalHistory.");
             return new RentalHistory();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
