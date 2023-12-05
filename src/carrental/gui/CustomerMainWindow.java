@@ -11,6 +11,7 @@ import carrental.models.RentalHistory;
 import carrental.panels.AccountPanel;
 import carrental.panels.FutureReservationsPanel;
 import carrental.panels.RentalHistoryPanel;
+import carrental.panels.ReservationPanel;
 import carrental.tables.AvailableCarsTableManager;
 import carrental.util.CustomerModificationListener;
 import carrental.util.CustomerProgressTracker;

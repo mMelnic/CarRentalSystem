@@ -12,7 +12,6 @@ import carrental.models.PricingAttributes;
 import carrental.models.RentalHistory;
 import carrental.util.CustomerAuthentication;
 
-// todo check if it's possible to create a class template for administrator/customer login panel
 public class CustomerLoginPanel extends JPanel {
     private JTextField usernameField;
     private JPasswordField passwordField;
@@ -75,7 +74,7 @@ public class CustomerLoginPanel extends JPanel {
         // Create and display the CustomerMainWindow
         CustomerMainWindow customerMainWindow = new CustomerMainWindow(authenticatedUser, carInventory, rentalHistory, pricingAttributes);
         customerMainWindow.setVisible(true);
-        // Close the current login window if needed
+        // Closing the current login window
         SwingUtilities.getWindowAncestor(this).dispose();
     }
 

@@ -15,7 +15,6 @@ public class CustomerLoginInterface extends JFrame{
     private CardLayout cardLayout;
     private JButton backButton;
 
-    // todo check if I can use a generic class for customer login interface and admin login interface
     public CustomerLoginInterface(JFrame mainInterface, CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         super("Customer Panel");
 

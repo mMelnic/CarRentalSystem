@@ -207,45 +207,61 @@ public class FutureReservationsPanel extends JPanel {
 
     private void cancelReservation(CarInventory carInventory, RentalHistory rentalHistory,
             List<RentalRecord> rentalRecords) {
+        // Get the selected row from the future reservations table
         int selectedRow = futureReservationsTable.getSelectedRow();
         int registrationInfoColumnIndex = 2;
 
         if (selectedRow >= 0) {
+            // Obtain the model associated with the future reservations table
             FutureReservationsTableModel model = (FutureReservationsTableModel) futureReservationsTable.getModel();
+
+            // Retrieve the selected rental record from the table model
             RentalRecord selectedRecord = model.getRentalRecord(selectedRow);
             String selectedRegistrationInfo = (String) futureReservationsTable.getValueAt(selectedRow,
-                        registrationInfoColumnIndex);
+                    registrationInfoColumnIndex);
 
+            // Check if the reservation can be canceled
             if (canCancelReservation(selectedRecord, carInventory, selectedRegistrationInfo)) {
+                // Get the rented car and rent ID from the selected reservation
                 Car rentedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
                 UUID rentId = selectedRecord.getRentId();
 
+                // Remove the rental interval and cancel the reservation
                 removeRentalIntervalAndCancelReservation(rentedCar, selectedRecord, rentId, rentalHistory);
+
+                // Update the future reservations table after cancellation
                 updateFutureReservationsTable(filterFutureReservations(rentalRecords));
 
+                // Display a success message
                 JOptionPane.showMessageDialog(this, "Reservation cancelled successfully", "Success",
                         JOptionPane.INFORMATION_MESSAGE);
             }
         } else {
+            // Display a message indicating that no reservation is selected
             showNoReservationSelectedMessage();
         }
     }
 
-    private boolean canCancelReservation(RentalRecord selectedRecord, CarInventory carInventory,
-            String selectedRegistrationInfo) {
+    private boolean canCancelReservation(RentalRecord selectedRecord, CarInventory carInventory, String selectedRegistrationInfo) {
+        // Check if a valid rental record is selected and modification is allowed
         if (selectedRecord != null && selectedRecord.isModificationAllowed()) {
+            // Retrieve the selected car from the car inventory
             Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+
+            // Check if the selected car is still available
             if (selectedCar != null) {
-                return true;
+                return true; // Reservation can be canceled
             } else {
+                // Display a warning message if the selected car is no longer available
                 JOptionPane.showMessageDialog(this, "Selected car is no longer available for cancellation.",
                         "Car Unavailable", JOptionPane.WARNING_MESSAGE);
-                return false;
+                return false; // Reservation cannot be canceled
             }
         } else {
+            // Display a warning message if cancellation is not allowed for the selected reservation
             JOptionPane.showMessageDialog(this, "Cancellation not allowed for the selected reservation.",
                     "Cancellation Not Allowed", JOptionPane.WARNING_MESSAGE);
-            return false;
+            return false; // Reservation cannot be canceled
         }
     }
 
@@ -291,7 +307,7 @@ public class FutureReservationsPanel extends JPanel {
 
     private JDateChooser createDatePicker(String label) {
         JDateChooser dateChooser = new JDateChooser();
-        dateChooser.setMinSelectableDate(new Date());  // Set minimum date to today
+        dateChooser.setMinSelectableDate(new Date());  // Minimum date set to today
 
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         panel.add(new JLabel(label));

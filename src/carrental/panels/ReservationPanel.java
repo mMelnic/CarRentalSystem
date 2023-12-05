@@ -1,4 +1,4 @@
-package carrental.gui;
+package carrental.panels;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -17,6 +17,7 @@ import javax.swing.border.TitledBorder;
 
 import com.toedter.calendar.JDateChooser;
 
+import carrental.gui.SearchComponentsPanel;
 import carrental.models.Car;
 import carrental.models.CarInventory;
 import carrental.models.Customer;
@@ -60,7 +61,7 @@ public class ReservationPanel extends JPanel {
         JScrollPane tableScrollPane = tableManager.createTableScrollPane(carInventory.getAvailableCarsInventoryToday());
         // Create a titled border
         TitledBorder titledBorder = BorderFactory.createTitledBorder("Available Cars per Today");
-        Font availableCarsTitleFont = new Font("Arial", Font.BOLD, 16); // Customize the font and size
+        Font availableCarsTitleFont = new Font("Arial", Font.BOLD, 16);
         titledBorder.setTitleFont(availableCarsTitleFont);
 
         // Set the titled border to the scroll pane
@@ -79,39 +80,51 @@ public class ReservationPanel extends JPanel {
     }
 
     private void rentSelectedCar() {
-        int selectedRow = unrentedCarsTable.getSelectedRow();
-        int registrationInfoColumnIndex = 2;
-    
-        if (selectedRow >= 0) {
-            // Get the registration info of the selected car from the table model
-            String selectedRegistrationInfo = (String) unrentedCarsTable.getValueAt(selectedRow, registrationInfoColumnIndex);
-            Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
-            Date[] dateRange = showDateSelectionDialog(contentPanel);
+        try {
+            int selectedRow = unrentedCarsTable.getSelectedRow();
+            int registrationInfoColumnIndex = 2;
 
-            if (dateRange.length != 0) {
-                Date startDate = dateRange[0];
-                Date endDate = dateRange[1];
-    
-                // Perform the rental process (update car inventory, display confirmation, etc.)
-                boolean success = carInventory.rentCar(selectedCar, startDate, endDate);
-    
-                if (success) {
-                    // Update the table with the new inventory
-                    double finalPrice = customer.calculateRentalPrice(selectedCar, startDate, endDate, serviceCharges);
-                    RentalRecord customerRecord = new RentalRecord(selectedCar, customer, finalPrice);
-                    selectedCar.addRentalInterval(customerRecord.getRentId(), startDate, endDate);
-                    rentalHistory.addRentalRecord(customerRecord);
-                    customer = customer.checkAndUpgrade(rentalHistory);
-                    customerProgressTracker.updateProgress(customer.getUsername(), rentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
-                    tableManager.updateTable(carInventory.getAvailableCarsInventoryToday());
-                } else {
-                    // Display a message indicating that the car was not found
-                    JOptionPane.showMessageDialog(contentPanel, "The car is unavailable for the selected period.", "Rental failed", JOptionPane.WARNING_MESSAGE);
+            if (selectedRow >= 0) {
+                // Get the registration info of the selected car from the table model
+                String selectedRegistrationInfo = (String) unrentedCarsTable.getValueAt(selectedRow,
+                        registrationInfoColumnIndex);
+                Car selectedCar = carInventory.getCarMap().get(selectedRegistrationInfo);
+                Date[] dateRange = showDateSelectionDialog(contentPanel);
+
+                if (dateRange.length != 0) {
+                    Date startDate = dateRange[0];
+                    Date endDate = dateRange[1];
+
+                    // Perform the rental process (update car inventory, display confirmation, etc.)
+                    boolean success = carInventory.rentCar(selectedCar, startDate, endDate);
+
+                    if (success) {
+                        // Update the table with the new inventory
+                        double finalPrice = customer.calculateRentalPrice(selectedCar, startDate, endDate,
+                                serviceCharges);
+                        RentalRecord customerRecord = new RentalRecord(selectedCar, customer, finalPrice);
+                        selectedCar.addRentalInterval(customerRecord.getRentId(), startDate, endDate);
+                        rentalHistory.addRentalRecord(customerRecord);
+                        customer = customer.checkAndUpgrade(rentalHistory);
+                        customerProgressTracker.updateProgress(customer.getUsername(),
+                                rentalHistory.getNumberOfReservationsForCustomer(customer.getUsername()));
+                        tableManager.updateTable(carInventory.getAvailableCarsInventoryToday());
+                    } else {
+                        // Display a message indicating that the car was not found
+                        JOptionPane.showMessageDialog(contentPanel, "The car is unavailable for the selected period.",
+                                "Rental failed", JOptionPane.WARNING_MESSAGE);
+                    }
                 }
+            } else {
+                // Display a message indicating that no car is selected
+                JOptionPane.showMessageDialog(contentPanel, "Please select a car to rent.", "No Car Selected",
+                        JOptionPane.WARNING_MESSAGE);
             }
-        } else {
-            // Display a message indicating that no car is selected
-            JOptionPane.showMessageDialog(contentPanel, "Please select a car to rent.", "No Car Selected", JOptionPane.WARNING_MESSAGE);
+        } catch (Exception e) {
+            e.printStackTrace();
+
+            JOptionPane.showMessageDialog(contentPanel, "An unexpected error occurred during the rental process.",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

@@ -1,9 +1,5 @@
 package carrental.models;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -71,7 +67,7 @@ public class CarInventory implements Serializable {
         return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
-    public boolean isCarRentedToday(Car car, LocalDate today) {
+    private boolean isCarRentedToday(Car car, LocalDate today) {
         for (RentalInterval interval : car.getRentalIntervals()) {
             if (isDateWithinInterval(today, interval)) {
                 return true; // Car is rented today
@@ -176,25 +172,7 @@ public class CarInventory implements Serializable {
     }
 
     public void serializeCarInventory(String filePath) {
-        SerializationUtil.serializeObject(this, filePath); //TODO is it worth to get rid of this method?
+        SerializationUtil.serializeObject(this, filePath);
     }
 
-    public static CarInventory deserializeCarInventory(String filePath) {
-        try (ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(filePath))) {
-            Object obj = inputStream.readObject();
-            if (obj instanceof CarInventory) {
-                return (CarInventory) obj;   //TODO use deserialization method from Serialization class
-            } else {
-                System.out.println("Invalid file content. Unable to deserialize CarInventory.");
-                return null;
-            }
-        } catch (FileNotFoundException e) {
-            // Handle the case where the file does not exist
-            System.out.println("File not found. Creating a new CarInventory.");
-            return new CarInventory(); // Or create a new CarInventory instance
-        } catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

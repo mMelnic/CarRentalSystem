@@ -24,8 +24,8 @@ public class UserInterface extends JFrame {
         add(customerButton);
         add(adminButton);
 
-        customerButton.addActionListener(e -> openCustomerPanel(inventory, rentalHistory, pricingAttributes));
-        adminButton.addActionListener(e -> openAdminPanel(inventory, rentalHistory, pricingAttributes));
+        customerButton.addActionListener(e -> openCustomerLogin(inventory, rentalHistory, pricingAttributes));
+        adminButton.addActionListener(e -> openAdminLogin(inventory, rentalHistory, pricingAttributes));
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(300, 150);
@@ -33,12 +33,12 @@ public class UserInterface extends JFrame {
         setVisible(true);
     }
 
-    private void openCustomerPanel(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
+    private void openCustomerLogin(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         new CustomerLoginInterface(this, carInventory, rentalHistory, pricingAttributes);
         setVisible(false);
     }
 
-    private void openAdminPanel(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
+    private void openAdminLogin(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         new AdminLoginInterface(this, carInventory, rentalHistory, pricingAttributes);
         setVisible(false);
     }

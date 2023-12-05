@@ -31,7 +31,7 @@ public class RentalHistorySearchPanel extends JPanel {
         endDateChooser.setDateFormatString("yyyy/MM/dd");
         searchButton = new JButton("Search");
         showAllButton = new JButton("Show All");
-        // Set a minimum date for the start and end date chooser
+        // Minimum date for the start and end date chooser
         startDateChooser.addPropertyChangeListener("date", e ->
             endDateChooser.setMinSelectableDate(startDateChooser.getDate()));
 
@@ -52,7 +52,7 @@ public class RentalHistorySearchPanel extends JPanel {
         add(dateSelectionPanel, BorderLayout.NORTH);
         add(new JScrollPane(rentalHistoryTable), BorderLayout.CENTER);
 
-        // Add action listeners to buttons
+        // Add action listeners to the buttons
         searchButton.addActionListener(e -> {
             Date startDate = startDateChooser.getDate();
                 Date endDate = endDateChooser.getDate();
@@ -68,7 +68,6 @@ public class RentalHistorySearchPanel extends JPanel {
         showAllButton.addActionListener(e -> updateRentalHistoryTable(rentalHistory));
     }
 
-    // Placeholder method for updating the rental history table
     private void updateRentalHistoryTable(RentalHistory updatedRentalHistory) {
         // Update the table model with the new rental history
         rentalHistoryTable.setModel(new RentalHistoryTableModel(updatedRentalHistory));

@@ -140,15 +140,13 @@ public class PricingAttributes implements Serializable{
             Object loadedObject = inputStream.readObject();
     
             if (loadedObject instanceof PricingAttributes) {
-                System.out.println("Loaded PricingAttributes ");
                 return (PricingAttributes) loadedObject;
             } else {
-                System.out.println("Invalid file content. Unable to deserialize PricingAttributes.");
                 return null;
             }
         } catch (FileNotFoundException e) {
-            // Handle the case where the file does not exist    
-            return new PricingAttributes(1,1,1,6,8,1,1,1,1,1,1); // Or create a new PricingAttributes instance
+            // The case where the file does not exist    
+            return new PricingAttributes(0,0,1,6,8,0,0,0,0,0,0);
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();

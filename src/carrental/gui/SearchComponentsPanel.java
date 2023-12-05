@@ -39,7 +39,7 @@ public class SearchComponentsPanel extends JPanel {
     }
 
     private void initializeComponents() {
-        // Create text fields, checkboxes, buttons, and date choosers as before
+        // Create text fields, checkboxes, buttons, and date choosers
         manufacturerField = new JTextField(10);
         modelField = new JTextField(10);
         comfortLevelComboBox = new JComboBox<>(Car.ComfortLevel.values());
@@ -83,7 +83,7 @@ public class SearchComponentsPanel extends JPanel {
         add(dateChooserPanel);
         add(row3Panel);
 
-        // Add action listeners
+        // Action listeners for the "Search" and "Clear" buttons
         searchButton.addActionListener(e -> performSearch());
         clearButton.addActionListener(e -> clearAllFields());
     }
@@ -131,6 +131,7 @@ public class SearchComponentsPanel extends JPanel {
         startDateChooser = new JDateChooser();
         endDateChooser = new JDateChooser();
 
+        // Prevent past dates and invalid intervals to be selected
         startDateChooser.setMinSelectableDate(new Date());
         startDateChooser.addPropertyChangeListener("date",
                 e -> endDateChooser.setMinSelectableDate(startDateChooser.getDate()));

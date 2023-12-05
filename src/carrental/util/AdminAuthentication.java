@@ -17,7 +17,14 @@ public class AdminAuthentication {
             throw new AccountCreationException("Invalid user. Account not created.");
         }
 
-        adminDatabase.put(admin.getUsername(), admin);
+        String username = admin.getUsername();
+
+        if (adminDatabase.containsKey(username)) {
+            throw new AccountCreationException(
+                    "Username '" + username + "' is already taken. Please choose a different username.");
+        }
+
+        adminDatabase.put(username, admin);
         saveAdminDatabaseToFile();
     }
 

@@ -12,7 +12,7 @@ import java.awt.event.ActionListener;
 
 public class AccountPanel extends JPanel {
     private JTextField usernameField;
-    private JPasswordField passwordField; // Change to JPasswordField
+    private JPasswordField passwordField;
     private JTextField fullNameField;
     private JTextField emailField;
 
@@ -21,12 +21,12 @@ public class AccountPanel extends JPanel {
 
         // Initialize text fields with existing customer data
         usernameField = new JTextField(customer.getUsername());
-        usernameField.setEditable(false); // Make username uneditable
-        passwordField = new JPasswordField(customer.getPassword()); // Use JPasswordField
+        usernameField.setEditable(false); // Username uneditable
+        passwordField = new JPasswordField(customer.getPassword());
         fullNameField = new JTextField(customer.getFullName());
         emailField = new JTextField(customer.getEmail());
 
-        // Add labels and text fields to the panel
+        // Labels and text fields
         add(new JLabel("Username:"));
         add(usernameField);
         add(new JLabel("Password:"));
@@ -37,7 +37,7 @@ public class AccountPanel extends JPanel {
         add(emailField);
         add(new JLabel());
 
-        // Add a button to confirm modifications
+        // Button to confirm modifications
         JButton confirmButton = new JButton("Confirm Changes");
         confirmButton.addActionListener(createConfirmActionListener(customer));
         add(confirmButton);
@@ -75,12 +75,12 @@ public class AccountPanel extends JPanel {
                     "Confirmation", JOptionPane.YES_NO_OPTION);
 
             if (confirmation == JOptionPane.YES_OPTION) {
-                // Update the customer information with the values from the text fields
+                // Updating the customer information with the values from the text fields
                 customer.setPassword(password);
                 customer.setFullName(fullName);
                 customer.setEmail(email);
 
-                // Update the customer_database.ser file
+                // Updating the customer_database.ser file
                 CustomerAuthentication.updateUser(customer.getUsername(), customer);
 
                 // Display a message indicating successful update

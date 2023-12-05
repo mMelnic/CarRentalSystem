@@ -40,7 +40,7 @@ public class PriceWindow extends JFrame {
         // Add the invoice panel to the main panel
         panel.add(invoicePanel, BorderLayout.CENTER);
 
-        // Add a "Print Invoice" button
+        // Add a "Close" button
         JButton closeButton = new JButton("Close");
         closeButton.addActionListener(e -> this.dispose());
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -51,7 +51,7 @@ public class PriceWindow extends JFrame {
 
         // Set up the frame
         getContentPane().add(panel);
-        setLocationRelativeTo(null); // Center the window
+        setLocationRelativeTo(null);
         setVisible(true);
         toFront();
     }

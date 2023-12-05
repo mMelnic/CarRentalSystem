@@ -5,7 +5,8 @@ import java.util.Date;
 import carrental.util.PriceCalculation;
 
 public class GoldCustomer extends Customer {
-    
+    private static final long serialVersionUID = 3L;
+
     public GoldCustomer(String username, String password, String fullName, String email) {
         super(username, password, fullName, email);
     }

@@ -32,11 +32,11 @@ public class PriceSetterPanel extends JPanel {
         setLayout(new GridLayout(12, 1));
         setBorder(new EmptyBorder(30, 50, 290, 140));
 
-        add(new JLabel("Weekly Discount Rate:"));
+        add(new JLabel("Weekly Discount Rate(0-1):"));
         weeklyDiscountRateField = new JTextField();
         add(weeklyDiscountRateField);
 
-        add(new JLabel("Monthly Discount Rate:"));
+        add(new JLabel("Monthly Discount Rate(0-1):"));
         monthlyDiscountRateField = new JTextField();
         add(monthlyDiscountRateField);
 
@@ -86,9 +86,9 @@ public class PriceSetterPanel extends JPanel {
             if (validateFields()) {
                 setPricingAttributes();
                 pricingAttributes.serializePricingAttributes("pricingAttributes.ser");
-                JOptionPane.showMessageDialog(null, "Values set successfully!"); // TODO after the success of serialize
+                JOptionPane.showMessageDialog(null, "Values set successfully!");
             } else {
-                JOptionPane.showMessageDialog(null, "Please fill in all fields.");
+                JOptionPane.showMessageDialog(null, "Please fill in all fields with correct values.");
             }
         });
         add(setValuesButton);
@@ -129,17 +129,40 @@ public class PriceSetterPanel extends JPanel {
     }
 
     private boolean validateFields() {
-        return !weeklyDiscountRateField.getText().isEmpty()
-                && !monthlyDiscountRateField.getText().isEmpty()
-                && !peakSeasonRateMultiplierField.getText().isEmpty()
-                && !peakSeasonStartMonthField.getText().isEmpty()
-                && !peakSeasonEndMonthField.getText().isEmpty()
-                && !gpsServiceChargeField.getText().isEmpty()
-                && !insuranceChargeField.getText().isEmpty()
-                && !childSeatChargeField.getText().isEmpty()
-                && !leatherInteriorChargeField.getText().isEmpty()
-                && !sunroofChargeField.getText().isEmpty()
-                && !hybridTechnologyChargeField.getText().isEmpty();
+        try {
+            // Parse discount rates from text fields
+            double weeklyDiscountRate = Double.parseDouble(weeklyDiscountRateField.getText());
+            double monthlyDiscountRate = Double.parseDouble(monthlyDiscountRateField.getText());
+
+            // Check if discount rates are between 0 and 1
+            boolean areDiscountRatesValid = (weeklyDiscountRate >= 0 && weeklyDiscountRate <= 1) &&
+                    (monthlyDiscountRate >= 0 && monthlyDiscountRate <= 1);
+
+            // Check other non-empty fields
+            if (!areDiscountRatesValid) {
+                // Display an error message to the user
+                showMessageDialog("Discount rates must be between 0 and 1.");
+                return false;
+            }
+
+            return !peakSeasonRateMultiplierField.getText().isEmpty() &&
+                    !peakSeasonStartMonthField.getText().isEmpty() &&
+                    !peakSeasonEndMonthField.getText().isEmpty() &&
+                    !gpsServiceChargeField.getText().isEmpty() &&
+                    !insuranceChargeField.getText().isEmpty() &&
+                    !childSeatChargeField.getText().isEmpty() &&
+                    !leatherInteriorChargeField.getText().isEmpty() &&
+                    !sunroofChargeField.getText().isEmpty() &&
+                    !hybridTechnologyChargeField.getText().isEmpty();
+        } catch (NumberFormatException e) {
+            // Handle the case where parsing fails (e.g., non-numeric input)
+            showMessageDialog("Invalid input. Please enter numeric values for discount rates.");
+            return false;
+        }
+    }
+
+    private void showMessageDialog(String message) {
+        JOptionPane.showMessageDialog(null, message, "Validation Error", JOptionPane.ERROR_MESSAGE);
     }
 
     private double parseDouble(String text) {

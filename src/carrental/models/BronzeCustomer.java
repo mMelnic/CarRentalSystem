@@ -13,7 +13,6 @@ public class BronzeCustomer extends Customer {
     
     @Override
     public double calculateRentalPrice(Car selectedCar, Date startDate, Date endDate, PricingAttributes pricingAttributes) {
-        // Default pricing logic for regular customers
         double durationBasedPrice = PriceCalculation.calculateDurationBasedPrice(
                 selectedCar.getPrice(), startDate, endDate, pricingAttributes);
         double additionalServicesPrice = PriceCalculation.calculateAdditionalServicesPrice(selectedCar.getAdditionalFeatures(),

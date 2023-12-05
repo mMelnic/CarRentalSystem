@@ -1,8 +1,10 @@
 {
-    "java.project.sourcePaths": ["src"],
+    "java.project.sourcePaths": [
+        "src",
+        "lib"
+    ],
     "java.project.outputPath": "bin",
     "java.project.referencedLibraries": [
-        "lib/**/*.jar",
-        "c:\\Users\\moldo\\Documents\\Uni_Sem3\\Programming3\\lib\\jcalendar-1.4.jar"
+        "lib/**/*.jar"
     ]
 }

@@ -37,7 +37,7 @@ public class SerializationUtil {
             }
         } catch (FileNotFoundException e) {
             logger.warning("Database file not found. Creating a new database.");
-            // If the file is not found, create a new instance of the database
+            // If the file is not found, creating a new instance of the database
             database = new HashMap<>();
         } catch (IOException | ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Error loading database from file", e);
@@ -50,18 +50,20 @@ public class SerializationUtil {
             if (myClass.isInstance(obj)) {
                 return myClass.cast(obj);
             } else {
-                System.out.println("Invalid file content. Unable to deserialize " + myClass.getSimpleName());
+                logger.log(Level.WARNING, "Invalid file content. Unable to deserialize {0}", myClass.getSimpleName());
                 return null;
             }
         } catch (FileNotFoundException e) {
-            System.out.println("File not found. Creating a new " + myClass.getSimpleName() + ".");
+            logger.log(Level.INFO, "File not found. Creating a new {0}.", myClass.getSimpleName());
             try {
                 return myClass.getDeclaredConstructor().newInstance();
             } catch (Exception ex) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, "Error creating a new instance of {0}", myClass.getSimpleName());
+                e.printStackTrace();
                 return null;
             }
         } catch (IOException | ClassNotFoundException e) {
+            logger.log(Level.SEVERE, "Error during deserialization of {0}", myClass.getSimpleName());
             e.printStackTrace();
             return null;
         }

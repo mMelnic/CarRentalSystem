@@ -5,7 +5,8 @@ import java.util.Date;
 import carrental.util.PriceCalculation;
 
 public class SilverCustomer extends Customer {
-    
+    private static final long serialVersionUID = 2L;
+
     public SilverCustomer(String username, String password, String fullName, String email) {
         super(username, password, fullName, email);
     }

@@ -2,7 +2,6 @@ package carrental.models;
 
 
 public class Administrator extends User{
-    // todo maybe move administrator related functionality from carInventory here
     public Administrator(String username, String password, String fullName, String email) {
         super(username, password, fullName, email);
     }

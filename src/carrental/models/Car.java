@@ -10,6 +10,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import carrental.exceptions.RentalIntervalException;
+
 public class Car implements Serializable{
     private String manufacturer;
     private String model;
@@ -136,9 +138,17 @@ public class Car implements Serializable{
         return Objects.hash(registrationInfo);
     }
 
-    public void addRentalInterval(UUID rentId, Date startDate, Date endDate) {
-        RentalInterval interval = new RentalInterval(rentId, startDate, endDate);
-        rentalIntervals.add(interval);
+    public void addRentalInterval(UUID rentId, Date startDate, Date endDate) throws RentalIntervalException {
+        try {
+            RentalInterval interval = new RentalInterval(rentId, startDate, endDate);
+            rentalIntervals.add(interval);
+        } catch (Exception e) {
+            // Log the exception or perform other necessary actions
+            e.printStackTrace();
+
+            // Rethrow a custom exception with a meaningful message
+            throw new RentalIntervalException("Failed to add rental interval", e);
+        }
     }
 
     public RentalInterval getRentalIntervalById(UUID rentId) {
@@ -149,7 +159,17 @@ public class Car implements Serializable{
     }
 
     public boolean canCarBeDeleted() {
-        return rentalIntervals.isEmpty();
+        Date currentDate = new Date();
+
+        for (RentalInterval interval : rentalIntervals) {
+            if (interval.getEndDate().after(currentDate)) {
+                // There is a rental interval with an end date in the future
+                return false;
+            }
+        }
+
+        // No rental intervals with an end date in the future
+        return true;
     }
 
     public void removeRentalIntervalWithId(UUID rentId) {
@@ -191,16 +211,21 @@ public class Car implements Serializable{
     }
 
     public boolean modifyReservation(UUID rentId, Date newStartDate, Date newEndDate) {
-        // Check if the modification is allowed
-        if (!hasOverlapWithExistingIntervalsExceptItself(rentId, newStartDate, newEndDate)) {
-            // Remove the existing rental interval with the given rentId
-            removeRentalIntervalWithId(rentId);
-            // Add the new rental interval
-            addRentalInterval(rentId, newStartDate, newEndDate);
+        try {
+            // Check if the modification is allowed
+            if (!hasOverlapWithExistingIntervalsExceptItself(rentId, newStartDate, newEndDate)) {
+                // Remove the existing rental interval with the given rentId
+                removeRentalIntervalWithId(rentId);
+                // Add the new rental interval
+                addRentalInterval(rentId, newStartDate, newEndDate);
 
-            return true; // Return true if the modification is successful
+                return true; // Return true if the modification is successful
+            }
+            return false;
+        } catch (RentalIntervalException e) {
+            e.printStackTrace();
+            return false;
         }
-        return false;
     }
     
     public boolean isModificationAllowed(UUID rentId) {

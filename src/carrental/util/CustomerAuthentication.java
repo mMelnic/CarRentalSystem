@@ -23,11 +23,17 @@ public class CustomerAuthentication {
             throw new AccountCreationException("Invalid user. Account not created.");
         }
 
-        customerDatabase.put(customer.getUsername(), customer);
+        String username = customer.getUsername();
+
+        if (customerDatabase.containsKey(username)) {
+            throw new AccountCreationException(
+                    "Username '" + username + "' is already taken. Please choose a different username.");
+        }
+
+        customerDatabase.put(username, customer);
         saveCustomerDatabaseToFile();
     }
 
-    // todo generic method for authentication of admin and customer:
     public static Customer authenticateUser(String username, String password, String email) {
         Customer user = customerDatabase.get(username);
         if (user != null && user.getPassword().equals(password) && user.getEmail().equals(email)) {
@@ -52,7 +58,6 @@ public class CustomerAuthentication {
         }
     }
     
-    // todo generic method for upgrade and downgrade
     public static Customer upgradeCustomerToBronze(String username) {
         Customer customer = customerDatabase.get(username);
         if (customer != null && !(customer instanceof BronzeCustomer)) {
