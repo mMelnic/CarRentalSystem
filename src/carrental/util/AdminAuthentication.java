@@ -30,7 +30,7 @@ public class AdminAuthentication {
 
     public static Administrator authenticateUser(String username, String password, String email) {
         Administrator user = adminDatabase.get(username);
-        if (user != null && user.getPassword().equals(password)) {// TODO && user.getEmail().equals(email)
+        if (user != null && user.getPassword().equals(password) && user.getEmail().equals(email)) {
             return user;
         }
         return null; // Authentication failed
