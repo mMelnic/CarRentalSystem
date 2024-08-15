@@ -6,11 +6,15 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import carrental.models.CarInventory;
+import carrental.models.PricingAttributes;
+import carrental.models.RentalHistory;
+
 public class UserInterface extends JFrame {
     private JButton customerButton;
     private JButton adminButton;
 
-    public UserInterface() {
+    public UserInterface(CarInventory inventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
         super("Car Rental System");
 
         customerButton = new JButton("Customer Panel");
@@ -20,8 +24,8 @@ public class UserInterface extends JFrame {
         add(customerButton);
         add(adminButton);
 
-        customerButton.addActionListener(e -> openCustomerPanel());
-        adminButton.addActionListener(e -> openAdminPanel());
+        customerButton.addActionListener(e -> openCustomerLogin(inventory, rentalHistory, pricingAttributes));
+        adminButton.addActionListener(e -> openAdminLogin(inventory, rentalHistory, pricingAttributes));
 
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setSize(300, 150);
@@ -29,13 +33,13 @@ public class UserInterface extends JFrame {
         setVisible(true);
     }
 
-    private void openCustomerPanel() {
-        new CustomerLoginInterface(this);
+    private void openCustomerLogin(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
+        new CustomerLoginInterface(this, carInventory, rentalHistory, pricingAttributes);
         setVisible(false);
     }
 
-    private void openAdminPanel() {
-        new AdminLoginInterface(this);
+    private void openAdminLogin(CarInventory carInventory, RentalHistory rentalHistory, PricingAttributes pricingAttributes) {
+        new AdminLoginInterface(this, carInventory, rentalHistory, pricingAttributes);
         setVisible(false);
     }
 }
