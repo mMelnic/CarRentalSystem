@@ -51,7 +51,6 @@ public class User implements Serializable{
         this.email = email;
     }
 
-    // todo check if I can have users with the same username
     public boolean isValidUser() {
         return isValidUsername(this.getUsername()) && isValidPassword(this.getPassword())
                 && isValidFullName(this.getFullName()) && isValidEmail(this.getEmail());
