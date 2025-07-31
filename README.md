@@ -77,6 +77,19 @@ A comprehensive Java Swing-based car rental management system that provides both
    javac -cp "lib/*" -d . src/carrental/*.java src/carrental/*/*.java
    ```
 
+### Quick Setup Using Prebuilt JAR
+
+Alternatively, you can run the application directly:
+
+1. Download the latest `.jar` from the [Releases](../../releases) page
+2. Run it with:
+
+```bash
+java -jar CarRentalSystem.jar
+```
+
+> Make sure you have Java 8 or higher installed.
+
 ## Running the Application
 
 ### Using Command Line
