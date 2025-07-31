@@ -54,7 +54,7 @@ A comprehensive Java Swing-based car rental management system that provides both
 
 1. **Clone or download the project**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/mMelnic/CarRentalSystem.git
    # or download and extract the ZIP file
    ```
 
